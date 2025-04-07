@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" class="h-100"> <!-- Clase h-100 para altura completa -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Plataforma de intercambio de libros BookSwap">
+    <title>{% block title %}Book-Swap{% endblock %}</title> <!-- Bloque dinámico para títulos -->
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Favicon -->
+    <link rel="icon" href="{% static 'img/favicon.ico' %}">
+    <!-- CSS personalizado -->
+    <link href="{% static 'styles.css' %}" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100"> <!-- Flex para footer abajo -->
+    <!-- Navbar mejorado -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#"> <!-- URL dinámica -->
+                <i class="fas fa-book-exchange me-2"></i>BookSwap
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Explorar</a> <!-- Ejemplo con URL -->
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Cómo funciona</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    {% if user.is_authenticated %}
+                        <div class="dropdown">
+                            <a class="btn btn-outline-primary dropdown-toggle" href="#" role="button" 
+                               id="userDropdown" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-1"></i> {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{#}">Mi perfil</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{#}">Cerrar sesión</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="#" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                        </a>
+                        <a href="#" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> Registrarse
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+        
+        {% block content %}{% endblock %}
+
+
+    <!-- Footer mejorado -->
+    <footer class="bg-dark text-white py-4 mt-auto"> <!-- mt-auto para pegar abajo -->
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 text-center text-md-start">
+                    <h5>BookSwap</h5>
+                    <p>Comparte y descubre nuevos libros</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <p class="mb-0">© {% now "Y" %} BookSwap</p>
+                </div>
+                <div class="col-md-4 text-center text-md-end">
+                    <a href="#" class="text-white mx-2"><i class="fab fa-instagram fa-lg"></i></a>
+                    <a href="#" class="text-white mx-2"><i class="fab fa-twitter fa-lg"></i></a>
+                    <a href="#" class="text-white mx-2"><i class="fab fa-facebook fa-lg"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %} <!-- Bloque para JS adicional -->
+</body>
+</html>
