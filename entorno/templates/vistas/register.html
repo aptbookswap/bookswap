@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookSwap - Registro</title>
+
+    <!-- Iconos y estilos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/register.css' %}">
+</head>
+<body>
+    <div class="login-container">
+        <h1>Crear Cuenta</h1>
+        <p>Únete a la comunidad BookSwap</p>
+
+        <form id="registerForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" required placeholder="tucorreo@ejemplo.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña (mínimo 6 caracteres)</label>
+                <input type="password" id="password" required minlength="6" placeholder="••••••••">
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirmar Contraseña</label>
+                <input type="password" id="confirmPassword" required placeholder="••••••••">
+            </div>
+
+            <button type="submit">Registrarse</button>
+        </form>
+
+        <div class="social-login">
+            <p>o regístrate con</p>
+            <button id="googleRegister" class="social-button">
+                <img src="https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png" alt="Google logo">
+                Continuar con Google
+            </button>
+        </div>
+
+        <div class="links">
+            <a href="{% url 'index' %}">¿Ya tienes cuenta? Inicia sesión</a>
+        </div>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/register.js' %}"></script>
+</body>
+</html>
