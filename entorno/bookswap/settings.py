@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'app'
 ]
 
 MIDDLEWARE = [
@@ -74,10 +75,15 @@ WSGI_APPLICATION = 'bookswap.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'booksawp',
+        'USER': 'postgres',
+        'PASSWORD': 'r**t7wXGjCgHa54',
+        'HOST': 'db.mujehtmtitnppouykxzx.supabase.co',
+        'PORT': '5432',
     }
 }
+
 
 
 # Password validation
