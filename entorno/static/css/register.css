@@ -156,3 +156,21 @@ button:hover {
     background-color: #e8f5e9;
     color: #2e7d32;
 }
+form#registerForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.form-row .form-group {
+    flex: 1 1 48%; /* cada campo ocupa hasta el 48% */
+    min-width: 200px;
+}
+

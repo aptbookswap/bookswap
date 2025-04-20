@@ -2,10 +2,10 @@
 {% load static %}
 
 {% block title %}Inicio | BookSwap{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/index.css' %}">
 {% endblock %}
-
 
 {% block content %}
 <section id="inicio" class="hero-section text-center">
@@ -13,7 +13,7 @@
         <h1 class="display-4 fw-bold">Intercambia, vende o dona libros</h1>
         <p class="lead">Encuentra lectores cerca de ti y dale una nueva vida a tus libros</p>
         <div class="mt-4">
-            <a href="#registro" class="btn btn-primary btn-lg me-2">Empieza ahora</a>
+            <a href="{% url 'registro' %}" class="btn btn-primary btn-lg me-2" id="heroRegisterBtn">Empieza ahora</a>
             <a href="#como-funciona" class="btn btn-outline-light btn-lg">Cómo funciona</a>
         </div>
     </div>
@@ -22,6 +22,7 @@
 <section id="mapa" class="container mb-5">
     <h2 class="text-center mb-4">Libros en tu zona</h2>
     <div class="map-container">
+        <!-- Vista bloqueada si no está logueado -->
         <div id="mapLoginOverlay" class="map-overlay login-required">
             <div class="map-content">
                 <i class="fas fa-lock fa-4x mb-3"></i>
@@ -29,10 +30,12 @@
                 <p>Debes iniciar sesión para ver los libros disponibles en tu zona</p>
                 <button id="mapLoginBtn" class="btn btn-primary mt-3">Iniciar sesión</button>
                 <div class="mt-3 text-muted">
-                    <small>Usuario demo: admin@bookswap.com / admin</small>
+                    <small>¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate aquí</a></small>
                 </div>
             </div>
         </div>
+
+        <!-- Mapa real visible solo si logueado -->
         <div id="realMap" style="display: none; width: 100%; height: 100%;">
             <div style="width: 100%; height: 100%; display: flex; flex-direction: column;">
                 <div class="bg-primary text-white p-2 d-flex justify-content-between align-items-center">
@@ -88,22 +91,32 @@
 {% block scripts %}
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
 <script>
-    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-    const mapLoginOverlay = document.getElementById('mapLoginOverlay');
-    const realMap = document.getElementById('realMap');
-    const authButtons = document.getElementById('authButtons');
-    const userMenu = document.getElementById('userMenu');
-    const userEmailDisplay = document.getElementById('userEmailDisplay');
-    const loginForm = document.getElementById('loginForm');
-    const logoutBtn = document.getElementById('logoutBtn');
+document.addEventListener('DOMContentLoaded', function () {
+    // Mostrar login modal desde botón en el mapa
+    const mapLoginBtn = document.getElementById('mapLoginBtn');
+    if (mapLoginBtn) {
+        mapLoginBtn.addEventListener('click', () => {
+            const modal = new bootstrap.Modal(document.getElementById('loginModal'));
+            modal.show();
+        });
+    }
 
-    const demoUser = {
-        email: 'admin@bookswap.com',
-        password: 'admin',
-        name: 'Administrador',
-        avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
-    };
+    // Si hay sesión activa, mostrar mapa y ocultar overlay
+    const sessionData = localStorage.getItem('usuarioActivo');
+    if (sessionData) {
+        const mapLoginOverlay = document.getElementById('mapLoginOverlay');
+        const realMap = document.getElementById('realMap');
 
+        mapLoginOverlay.style.display = 'none';
+        realMap.style.display = 'block';
+
+        // Esperar que se renderice antes de inicializar el mapa
+        setTimeout(() => {
+            initMap();
+        }, 100);
+    }
+
+    // Mapa con Mapbox
     let map = null;
     let geolocate = null;
     let userLocation = null;
@@ -111,48 +124,22 @@
     let destinationPopup = null;
     const routeLayerId = 'route';
 
-    document.getElementById('loginBtn').addEventListener('click', () => loginModal.show());
-    document.getElementById('mapLoginBtn').addEventListener('click', () => loginModal.show());
-    document.getElementById('registerBtn').addEventListener('click', () => alert('Redirigiendo al formulario de registro'));
-    document.getElementById('heroRegisterBtn').addEventListener('click', () => alert('Redirigiendo al formulario de registro'));
-
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-
-        if(email === demoUser.email && password === demoUser.password) {
-            loginModal.hide();
-            mapLoginOverlay.style.display = 'none';
-            realMap.style.display = 'block';
-            authButtons.classList.add('d-none');
-            userMenu.classList.remove('d-none');
-            document.getElementById('userAvatar').src = demoUser.avatar;
-            userEmailDisplay.textContent = demoUser.email;
-            if (!map) initMap();
-        } else {
-            alert('Credenciales incorrectas. Usa admin@bookswap.com / admin');
-        }
-    });
-
-    logoutBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        authButtons.classList.remove('d-none');
-        userMenu.classList.add('d-none');
-        mapLoginOverlay.style.display = 'flex';
-        realMap.style.display = 'none';
-        loginForm.reset();
-        alert('Has cerrado sesión correctamente');
-    });
-
     function initMap() {
+        if (map) return;
+
         mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
+
+        // 📍 Coordenadas por defecto: Viña del Mar
+        const defaultCoords = [-71.542969, -33.015347];
+
         map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/outdoors-v12',
-            zoom: 5
+            center: defaultCoords,
+            zoom: 12
         });
 
+        // Agrega control de geolocalización
         geolocate = new mapboxgl.GeolocateControl({ trackUserLocation: false, showUserLocation: true });
         map.addControl(geolocate);
 
@@ -161,16 +148,23 @@
             map.flyTo({ center: userLocation, zoom: 13 });
         });
 
-        map.on('load', () => geolocate.trigger());
+        map.on('load', () => {
+            geolocate.trigger();
+        });
 
         map.on('contextmenu', (e) => {
             if (destinationMarker) destinationMarker.remove();
             if (destinationPopup) destinationPopup.remove();
 
             destinationMarker = new mapboxgl.Marker().setLngLat([e.lngLat.lng, e.lngLat.lat]).addTo(map);
-            destinationPopup = new mapboxgl.Popup().setLngLat([e.lngLat.lng, e.lngLat.lat]).setHTML('Libro 123 - Luis Perez').addTo(map);
+            destinationPopup = new mapboxgl.Popup()
+                .setLngLat([e.lngLat.lng, e.lngLat.lat])
+                .setHTML('Libro 123 - Luis Pérez')
+                .addTo(map);
 
-            if (userLocation) getDirections(userLocation, [e.lngLat.lng, e.lngLat.lat]);
+            if (userLocation) {
+                getDirections(userLocation, [e.lngLat.lng, e.lngLat.lat]);
+            }
         });
 
         map.addControl(new mapboxgl.NavigationControl());
@@ -203,5 +197,8 @@
         if (map.getLayer(routeLayerId)) map.removeLayer(routeLayerId);
         if (map.getSource('route')) map.removeSource('route');
     }
+});
 </script>
+<script src="{% static 'js/login.js' %}"></script>
 {% endblock %}
+

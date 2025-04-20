@@ -1,90 +1,106 @@
-// auth.js
-
-const formularioLogin = document.getElementById('loginForm');
-const enlaceRegistro = document.getElementById('registerLink');
-const enlaceRecuperarClave = document.getElementById('forgotPasswordLink');
-const botonGoogle = document.getElementById('googleLogin');
-const contenedorMensaje = document.getElementById('message');
-
-let cargando = false;
-
-// Iniciar sesión con correo y contraseña
-formularioLogin.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (cargando) return;
-
-    const correo = document.getElementById('email').value.trim();
-    const clave = document.getElementById('password').value.trim();
-
-    if (!correo || !clave) {
-        mostrarMensaje('Por favor completa todos los campos', 'error');
-        return;
+document.addEventListener('DOMContentLoaded', function () {
+    // Mostrar el modal de login al hacer clic
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', () => {
+            const modal = new bootstrap.Modal(document.getElementById('loginModal'));
+            modal.show();
+        });
     }
 
-    cargando = true;
-    const boton = formularioLogin.querySelector('button[type="submit"]');
-    boton.disabled = true;
-    boton.textContent = 'Iniciando sesión...';
+    // Manejar envío del formulario de login
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
 
-    try {
-        // Aquí deberías hacer la llamada a tu backend
-        // const respuesta = await fetch('/api/login', {...});
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulación
+            const identificador = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const messageBox = document.getElementById('message');
+            messageBox.className = 'message';
 
-        mostrarMensaje('Inicio de sesión exitoso. Redirigiendo...', 'success');
-        setTimeout(() => window.location.href = 'home.html', 2000);
-    } catch (error) {
-        manejarErrorAutenticacion(error);
-    } finally {
-        cargando = false;
-        boton.disabled = false;
-        boton.textContent = 'Iniciar Sesión';
+            try {
+                const response = await fetch('/api/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        identificador,
+                        password
+                    })
+                });
+
+                if (!response.ok) throw new Error('Respuesta inválida');
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageBox.textContent = 'Inicio de sesión exitoso';
+                    messageBox.classList.add('success');
+
+                    // Ocultar modal
+                    const modalElement = document.getElementById('loginModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    modalInstance.hide();
+
+                    // Actualizar barra de navegación
+                    document.getElementById('authButtons').classList.add('d-none');
+                    document.getElementById('userMenu').classList.remove('d-none');
+                    document.getElementById('userEmailDisplay').textContent = data.nombre;
+
+                    // Guardar sesión en localStorage
+                    localStorage.setItem('usuarioActivo', JSON.stringify(data));
+
+                    window.location.reload();
+                
+
+                } else {
+                    messageBox.textContent = data.mensaje || 'Credenciales incorrectas.';
+                    messageBox.classList.add('error');
+                }
+
+            } catch (error) {
+                console.error(error);
+                messageBox.textContent = 'Error inesperado. Intenta de nuevo.';
+                messageBox.classList.add('error');
+            }
+        });
+    }
+
+    // Mostrar datos si hay sesión activa
+    const sessionData = localStorage.getItem('usuarioActivo');
+    if (sessionData) {
+        const data = JSON.parse(sessionData);
+        document.getElementById('authButtons').classList.add('d-none');
+        document.getElementById('userMenu').classList.remove('d-none');
+        document.getElementById('userEmailDisplay').textContent = data.nombre;
+    }
+
+    // Logout
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('usuarioActivo');
+            document.getElementById('authButtons').classList.remove('d-none');
+            document.getElementById('userMenu').classList.add('d-none');
+        });
     }
 });
 
-// Inicio con Google simulado
-botonGoogle.addEventListener('click', async (e) => {
-    e.preventDefault();
-    if (cargando) return;
-
-    cargando = true;
-    botonGoogle.disabled = true;
-    botonGoogle.innerHTML = '<div class="loading-spinner"></div> Continuando con Google...';
-
-    try {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulación
-
-        mostrarMensaje('Inicio de sesión con Google exitoso. Redirigiendo...', 'success');
-        setTimeout(() => window.location.href = 'home.html', 2000);
-    } catch (error) {
-        manejarErrorAutenticacion(error);
-    } finally {
-        cargando = false;
-        botonGoogle.disabled = false;
-        botonGoogle.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Logo Google"> Continuar con Google';
+// Utilidad para obtener CSRF token desde cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let c of cookies) {
+            const cookie = c.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
     }
-});
-
-// Redireccionar al registro
-enlaceRegistro.addEventListener('click', (e) => {
-    e.preventDefault();
-    window.location.href = 'register.html';
-});
-
-// Recuperar contraseña (simulado)
-enlaceRecuperarClave.addEventListener('click', async (e) => {
-    e.preventDefault();
-    const correo = document.getElementById('email').value.trim();
-
-    if (!correo) {
-        mostrarMensaje('Por favor ingresa tu correo electrónico primero', 'error');
-        return;
-    }
-
-    try {
-        await new Promise(resolve => setTimeout(resolve, 500)); // Simulación
-        mostrarMensaje('Te enviamos un correo para restablecer tu contraseña.', 'success');
-    } catch (error) {
-        manejarErrorAutenticacion(error);
-    }
-});
+    return cookieValue;
+}

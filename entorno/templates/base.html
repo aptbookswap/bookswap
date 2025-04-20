@@ -55,13 +55,13 @@
                     </button>
                 </div>
                 <div class="d-flex align-items-center d-none" id="userMenu">
-                    <img src="https://randomuser.me/api/portraits/men/1.jpg" class="user-avatar" id="userAvatar">
+                    <img src="{% static 'img/perfil.jpg' %}" class="user-avatar" id="userAvatar">
                     <div class="dropdown">
                         <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
                             <span id="userEmailDisplay">admin@bookswap.com</span>
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Perfil</a></li>
+                            <li><a class="dropdown-item" href="{% url 'perfil' %}"><i class="fas fa-user me-2"></i>Perfil</a></li>
                             <li><a class="dropdown-item" href="#"><i class="fas fa-book me-2"></i>Mis libros</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a></li>
@@ -72,33 +72,42 @@
         </div>
     </nav>
 
-    <!-- MODAL LOGIN -->
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Iniciar sesión</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="loginForm">
-                        <div class="mb-3">
-                            <label for="loginEmail" class="form-label">Correo electrónico</label>
-                            <input type="email" class="form-control" id="loginEmail" value="admin@bookswap.com" required>
-                            <div class="form-text">Usuario demo: admin@bookswap.com / admin</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="loginPassword" class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" id="loginPassword" value="admin" required>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Ingresar</button>
-                        </div>
-                    </form>
-                </div>
+   <!-- MODAL LOGIN -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"> <!-- 👈 centrado verticalmente -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Iniciar sesión</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="loginEmail" class="form-label">Correo o Usuario</label>
+                        <input type="text" class="form-control" id="loginEmail" required placeholder="correo o usuario">
+                        <div class="form-text">Puedes usar correo o nombre de usuario</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="loginPassword" required placeholder="••••••••">
+                    </div>
+                    <div class="d-grid mb-2">
+                        <button type="submit" class="btn btn-primary">Ingresar</button>
+                    </div>
+
+                    <!-- 🔗 Enlace a registro -->
+                    <p class="text-center">
+                        ¿No tienes una cuenta? <a href="{% url 'registro' %}">Regístrate aquí</a>
+                    </p>
+
+                    <!-- Mensaje de error o éxito -->
+                    <div id="message" class="message text-center mt-3"></div>
+                </form>
             </div>
         </div>
     </div>
+</div>
+
 
     <!-- CONTENIDO DE LA PÁGINA -->
     {% block content %}{% endblock %}
@@ -125,6 +134,7 @@
 
     <!-- Bootstrap Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/utilidades.js' %}"></script>
 
     {% block scripts %}{% endblock %}
 </body>

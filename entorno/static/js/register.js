@@ -1,107 +1,77 @@
-// Elementos del DOM
-const registerForm = document.getElementById('registerForm');
-const googleRegisterBtn = document.getElementById('googleRegister');
-const messageDiv = document.getElementById('message');
-let isLoading = false;
-
-// Manejar registro con email y contraseña
-registerForm.addEventListener('submit', async (e) => {
+document.getElementById('registerForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    if (isLoading) return;
-
-    const email = document.getElementById('email').value.trim();
+    const nombre = document.getElementById('nombre').value.trim();
+    const correo = document.getElementById('email').value.trim();
+    const numero = document.getElementById('numero').value.trim();
+    const anno = document.getElementById('anno_nacimiento').value.trim();
+    const preferencias = document.getElementById('preferencias').value.trim();
+    const ubicacion = document.getElementById('ubicacion').value.trim();
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
 
-    // Validaciones
-    if (!email || !password || !confirmPassword) {
-        mostrarMensaje('Por favor completa todos los campos', 'error');
-        return;
-    }
+    const messageBox = document.getElementById('message');
+    messageBox.className = 'message';
 
     if (password !== confirmPassword) {
-        mostrarMensaje('Las contraseñas no coinciden', 'error');
+        messageBox.textContent = 'Las contraseñas no coinciden.';
+        messageBox.classList.add('error');
         return;
     }
-
-    if (password.length < 6) {
-        mostrarMensaje('La contraseña debe tener al menos 6 caracteres', 'error');
-        return;
-    }
-
-    isLoading = true;
-    const submitButton = registerForm.querySelector('button[type="submit"]');
-    submitButton.disabled = true;
-    submitButton.textContent = 'Registrando...';
 
     try {
         const response = await fetch('/api/registro/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': obtenerCSRFToken()
+                'X-CSRFToken': getCookie('csrftoken')
             },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({
+                nombre,
+                correo,
+                numero,
+                anno_nacimiento: anno,
+                preferencias,
+                ubicacion,
+                password
+            })
         });
+
+        // ✅ Validar si la respuesta es válida antes de convertirla en JSON
+        if (!response.ok) {
+            throw new Error('Respuesta inválida del servidor');
+        }
 
         const data = await response.json();
 
-        if (!response.ok || !data.success) {
-            throw new Error(data.mensaje || 'Error en el registro');
+        if (data.success) {
+            messageBox.textContent = data.mensaje;
+            messageBox.classList.add('success');
+            document.getElementById('registerForm').reset();
+        } else {
+            messageBox.textContent = data.mensaje || 'Error al registrar usuario.';
+            messageBox.classList.add('error');
         }
 
-        mostrarMensaje(data.mensaje || 'Registro exitoso. Revisa tu correo.', 'success');
-
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 3000);
-
     } catch (error) {
-        manejarErrorAutenticacion(error.message);
-    } finally {
-        isLoading = false;
-        submitButton.disabled = false;
-        submitButton.textContent = 'Registrarse';
+        console.error(error);
+        messageBox.textContent = 'Error inesperado. Intenta de nuevo.';
+        messageBox.classList.add('error');
     }
 });
 
-// Manejar registro con Google (simulado)
-googleRegisterBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-
-    if (isLoading) return;
-
-    isLoading = true;
-    googleRegisterBtn.disabled = true;
-    googleRegisterBtn.innerHTML = '<div class="loading-spinner"></div> Continuando con Google...';
-
-    try {
-        // Simulación (Django no lo usa por defecto)
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        mostrarMensaje('Registro con Google exitoso. Redirigiendo...', 'success');
-
-        setTimeout(() => {
-            window.location.href = 'home.html';
-        }, 2000);
-    } catch (error) {
-        manejarErrorAutenticacion(error);
-    } finally {
-        isLoading = false;
-        googleRegisterBtn.disabled = false;
-        googleRegisterBtn.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google logo"> Continuar con Google';
-    }
-});
-
-// Obtener token CSRF desde cookies
-function obtenerCSRFToken() {
-    const name = 'csrftoken';
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-        const c = cookie.trim();
-        if (c.startsWith(name + '=')) {
-            return c.substring(name.length + 1);
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            // Verifica que la cookie comience con el nombre deseado
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
         }
     }
-    return '';
+    return cookieValue;
 }

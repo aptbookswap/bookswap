@@ -37,8 +37,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'app'
+    'app',
+    'rest_framework',
 ]
+
+AUTH_USER_MODEL = 'app.Usuario'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -76,14 +85,13 @@ WSGI_APPLICATION = 'bookswap.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'booksawp',
-        'USER': 'postgres',
-        'PASSWORD': 'r**t7wXGjCgHa54',
-        'HOST': 'db.mujehtmtitnppouykxzx.supabase.co',
+        'NAME': 'postgres',  # nombre de la base
+        'USER': 'postgres.mujehtmtitnppouykxzx',
+        'PASSWORD': 'r**t7wXGjCgHa54',  # reemplaza esto con tu contraseña real
+        'HOST': 'aws-0-sa-east-1.pooler.supabase.com',
         'PORT': '5432',
     }
 }
-
 
 
 # Password validation
