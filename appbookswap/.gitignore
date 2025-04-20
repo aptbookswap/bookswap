@@ -1,9 +1,11 @@
 # Entorno virtual
+venv/
+.venv/
 Lib/
 Scripts/
 pyvenv.cfg
 
-# Python
+# Archivos de Python compilados
 __pycache__/
 *.py[cod]
 *.pyo
@@ -15,12 +17,11 @@ __pycache__/
 
 # Archivos de entorno
 .env
-.venv/
 
-# Media y archivos generados
+# Archivos generados por Django
 media/
 staticfiles/
 
-# IDE/Editor
+# Archivos de configuración de editores
 .vscode/
 .idea/
