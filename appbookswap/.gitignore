@@ -1,0 +1,26 @@
+# Entorno virtual
+Lib/
+Scripts/
+pyvenv.cfg
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Base de datos SQLite
+*.sqlite3
+*.sqlite
+
+# Archivos de entorno
+.env
+.venv/
+
+# Media y archivos generados
+media/
+staticfiles/
+
+# IDE/Editor
+.vscode/
+.idea/
