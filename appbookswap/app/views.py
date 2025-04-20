@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from .models import Usuario, Preferencia
+from .models import Usuario
 from .serializers import UsuarioSerializer
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
@@ -41,23 +41,18 @@ def api_registro(request):
             first_name=data.get('nombre'),
             numero=data.get('numero') or None,
             anno_nacimiento=data.get('anno_nacimiento'),
-            ubicacion=data.get('ubicacion') or ''
+            ubicacion=data.get('ubicacion') or '',
+            preferencias=data.get('preferencias') or ''  # ✅ preferencias como string
         )
         usuario.set_password(password)
         usuario.save()
-
-        # Guardar preferencias como objetos
-        if data.get('preferencias'):
-            generos = [p.strip() for p in data['preferencias'].split(',')]
-            for g in generos:
-                pref, _ = Preferencia.objects.get_or_create(nombre=g)
-                usuario.preferencias.add(pref)
 
         return JsonResponse({'success': True, 'mensaje': 'Usuario registrado con éxito'})
 
     except Exception as e:
         print(f'Error en el registro: {e}')
         return JsonResponse({'success': False, 'mensaje': 'Error interno'}, status=500)
+
 
 
 # Login de usuario
