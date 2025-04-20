@@ -13,19 +13,21 @@ Sigue estos pasos para levantar el proyecto en tu entorno local:
 
 2. Abre la carpeta del proyecto con Visual Studio Code.
 
-3. Activa el entorno virtual:  
-   `entorno/Scripts/activate`
+3. En GitHub\bookswap crea y activa un nuevo entorno virtual:
+`python -m venv venv` luego
 
-4. Accede al directorio del entorno:  
-   `cd entorno`
+`.\venv\Scripts\activate`
 
-5. Instala Django:  
-   `pip install django`
+4. Accede al directorio de la app  
+   `cd appbookswap`
+
+5. Instala las librerias:  
+   `pip install -r requirements.txt`
+
+6. Migrar la base de datos:
+   `python manage.py migrate`
    
-7. Instala PostgresSQL (Supabase):  
-   `pip install psycopg2-binary`
-
-8. Ejecuta el servidor local:  
+7. Ejecuta el servidor local:  
    `python manage.py runserver`
 
 ---
@@ -62,4 +64,4 @@ Sigue estos pasos para levantar el proyecto en tu entorno local:
 ## 📅 Proyecto APT - Duoc UC
 
 Desarrollado durante el módulo APT, con una duración de 12 semanas.  
-Tecnologías utilizadas: **Ionic, Angular, Bootstrap, TypeScript, Supabase, Firebase**.
+Tecnologías utilizadas: **Django, Bootstrap, Python, Supabase**.
