@@ -1,0 +1,27 @@
+# Entorno virtual
+venv/
+.venv/
+Lib/
+Scripts/
+pyvenv.cfg
+
+# Archivos de Python compilados
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Base de datos SQLite
+*.sqlite3
+*.sqlite
+
+# Archivos de entorno
+.env
+
+# Archivos generados por Django
+media/
+staticfiles/
+
+# Archivos de configuración de editores
+.vscode/
+.idea/
