@@ -21,8 +21,11 @@ Sigue estos pasos para levantar el proyecto en tu entorno local:
 
 5. Instala Django:  
    `pip install django`
+   
+7. Instala PostgresSQL (Supabase):  
+   `pip install psycopg2-binary`
 
-6. Ejecuta el servidor local:  
+8. Ejecuta el servidor local:  
    `python manage.py runserver`
 
 ---
