@@ -1,12 +1,16 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .models import Usuario
 from .serializers import UsuarioSerializer
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model, authenticate, login as auth_login
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils.decorators import method_decorator
+from .models import Message
+from .forms import MessageForm
+from django.template.loader import render_to_string 
+from django.contrib.auth.decorators import login_required
 import json
 
 User = get_user_model()
@@ -19,7 +23,8 @@ def registro(request):
     return render(request, 'vistas/register.html')
 
 def perfil(request):
-    return render(request, 'vistas/perfil.html')
+    usuarios = Usuario.objects.exclude(id=request.user.id)
+    return render(request, 'vistas/perfil.html', {'users': usuarios})
 
 
 # Registro de usuario
@@ -42,7 +47,7 @@ def api_registro(request):
             numero=data.get('numero') or None,
             anno_nacimiento=data.get('anno_nacimiento'),
             ubicacion=data.get('ubicacion') or '',
-            preferencias=data.get('preferencias') or ''  # ✅ preferencias como string
+            preferencias=data.get('preferencias') or ''
         )
         usuario.set_password(password)
         usuario.save()
@@ -54,8 +59,7 @@ def api_registro(request):
         return JsonResponse({'success': False, 'mensaje': 'Error interno'}, status=500)
 
 
-
-# Login de usuario
+# Login de usuario con auth_login
 @csrf_exempt
 def login_usuario(request):
     if request.method != 'POST':
@@ -66,8 +70,6 @@ def login_usuario(request):
         identificador = data.get('identificador')
         password = data.get('password')
 
-        print(f"Intentando login con: {identificador}, password: {'*' * len(password)}")
-
         try:
             usuario = User.objects.get(email=identificador)
             username = usuario.username
@@ -77,7 +79,7 @@ def login_usuario(request):
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-            print("Usuario autenticado:", user.username)
+            auth_login(request, user)  # ✅ Aquí se guarda la sesión
             return JsonResponse({
                 'success': True,
                 'nombre': user.first_name,
@@ -85,7 +87,6 @@ def login_usuario(request):
                 'correo': user.email
             })
         else:
-            print("Falló autenticación")
             return JsonResponse({'success': False, 'mensaje': 'Credenciales inválidas'})
 
     except Exception as e:
@@ -100,3 +101,57 @@ class PerfilUsuarioAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = UsuarioSerializer
     lookup_field = 'uid'
     parser_classes = [MultiPartParser, FormParser]
+
+
+@login_required
+def user_list(request):
+    users = Usuario.objects.exclude(id=request.user.id)
+    return render(request, 'vistas/user_list.html', {'users': users})
+
+
+@login_required
+def chat_view(request, uid):
+    other_user = get_object_or_404(Usuario, uid=uid)
+
+    messages = Message.objects.filter(
+        sender__uid=request.user.uid, recipient__uid=other_user.uid
+    ) | Message.objects.filter(
+        sender__uid=other_user.uid, recipient__uid=request.user.uid
+    )
+
+    messages = messages.order_by('timestamp')
+
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            msg = form.save(commit=False)
+            msg.sender = request.user
+            msg.recipient = other_user
+            msg.save()
+            return redirect('chat', uid=uid)
+    else:
+        form = MessageForm()
+
+    return render(request, 'vistas/chat.html', {
+        'form': form,
+        'messages': messages,
+        'other_user': other_user
+    })
+
+
+@login_required
+def fetch_messages(request, uid):
+    other_user = get_object_or_404(Usuario, uid=uid)
+
+    messages = Message.objects.filter(
+        sender__uid=request.user.uid, recipient__uid=other_user.uid
+    ) | Message.objects.filter(
+        sender__uid=other_user.uid, recipient__uid=request.user.uid
+    )
+    messages = messages.order_by('timestamp')
+
+    html = render_to_string('vistas/partials/messages.html', {
+        'messages': messages,
+        'user': request.user
+    })
+    return JsonResponse({'html': html})

@@ -10,6 +10,10 @@ urlpatterns = [
     path('api/login/', views.login_usuario, name='login_usuario'),
     path('api/perfil/<uuid:uid>/', views.PerfilUsuarioAPIView.as_view(), name='perfil_usuario'),
     path('perfil/', views.perfil, name='perfil'),
+    path('usuarios/', views.user_list, name='user_list'),
+    path('chat/<uuid:uid>/', views.chat_view, name='chat'),
+    path('chat/<uuid:uid>/fetch/', views.fetch_messages, name='fetch_messages'),
+    
 
     
 

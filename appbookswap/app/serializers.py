@@ -6,11 +6,11 @@ class UsuarioSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = [
             'uid',
-            'first_name',       # nombre
+            'first_name',       
             'email',
             'numero',
             'anno_nacimiento',
-            'preferencias',     # ahora es un string
+            'preferencias',     
             'ubicacion',
             'img_perfil'
         ]

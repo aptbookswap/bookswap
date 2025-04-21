@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getCookie('csrftoken')
                     },
+                    credentials: 'include', // ✅ Permitir cookies de sesión de Django
                     body: JSON.stringify({
                         identificador,
                         password
@@ -45,16 +46,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     const modalInstance = bootstrap.Modal.getInstance(modalElement);
                     modalInstance.hide();
 
-                    // Actualizar barra de navegación
+                    // Mostrar menú de usuario
                     document.getElementById('authButtons').classList.add('d-none');
                     document.getElementById('userMenu').classList.remove('d-none');
                     document.getElementById('userEmailDisplay').textContent = data.nombre;
 
-                    // Guardar sesión en localStorage
+                    // Guardar datos en localStorage (opcional si quieres usarlo para JS)
                     localStorage.setItem('usuarioActivo', JSON.stringify(data));
 
+                    // Recargar la página para aplicar la sesión
                     window.location.reload();
-                
 
                 } else {
                     messageBox.textContent = data.mensaje || 'Credenciales incorrectas.';
@@ -73,8 +74,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const sessionData = localStorage.getItem('usuarioActivo');
     if (sessionData) {
         const data = JSON.parse(sessionData);
-        document.getElementById('authButtons').classList.add('d-none');
-        document.getElementById('userMenu').classList.remove('d-none');
+        document.getElementById('authButtons')?.classList.add('d-none');
+        document.getElementById('userMenu')?.classList.remove('d-none');
         document.getElementById('userEmailDisplay').textContent = data.nombre;
     }
 
@@ -89,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Utilidad para obtener CSRF token desde cookies
+// 👇 Utilidad para obtener el CSRF Token desde cookies
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
