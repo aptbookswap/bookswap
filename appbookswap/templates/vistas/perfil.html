@@ -11,11 +11,14 @@
 <div class="container my-5">
     <h2 class="text-center mb-4">Mi Perfil</h2>
     <div class="row">
+        <!-- Columna izquierda: imagen de perfil -->
         <div class="col-md-4 text-center">
             <img id="imgPerfilPreview" src="{% static 'img/perfil.jpg' %}" class="rounded-circle img-thumbnail mb-3" width="200" height="200" alt="Imagen de perfil">
             <input type="file" id="imgPerfilInput" accept="image/*" class="form-control mb-3" style="display: none;" disabled>
             <button id="changeImgBtn" class="btn btn-outline-secondary btn-sm" disabled>Cambiar imagen</button>
         </div>
+
+        <!-- Columna derecha: formulario -->
         <div class="col-md-8">
             <!-- Switch para editar -->
             <div class="form-check form-switch text-center mb-4">
@@ -53,9 +56,25 @@
             </form>
         </div>
     </div>
+
+    <!-- 🔽 NUEVA SECCIÓN: Lista de usuarios -->
+    <hr class="my-5">
+    <div class="row">
+        <h4 class="text-center mb-3">Chatear con otros usuarios</h4>
+        <ul class="list-group col-md-6 mx-auto">
+            {% for user in users %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ user.first_name }} ({{ user.email }})
+                    <a href="{% url 'chat' uid=user.uid %}" class="btn btn-sm btn-outline-primary">Chatear</a>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-center">No hay otros usuarios disponibles</li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 
-<!-- Modal de confirmación para modificar -->
+<!-- Modales -->
 <div class="modal fade" id="confirmarModificarModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -74,7 +93,6 @@
   </div>
 </div>
 
-<!-- Modal de confirmación para eliminar cuenta -->
 <div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">

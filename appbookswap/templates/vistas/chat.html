@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chat | BookSwap{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .chat-container {
+        max-width: 800px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 80vh;
+    }
+
+    .chat-header {
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background-color: #f5f5f5;
+    }
+
+    .chat-message {
+        margin-bottom: 10px;
+        max-width: 70%;
+        padding: 10px;
+        border-radius: 15px;
+        word-wrap: break-word;
+    }
+
+    .sent {
+        margin-left: auto;
+        background-color: #dcf8c6;
+        text-align: right;
+    }
+
+    .received {
+        margin-right: auto;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+    .chat-form {
+        display: flex;
+        border-top: 1px solid #ddd;
+        padding: 10px;
+        background-color: #f8f9fa;
+    }
+
+    .chat-form input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        margin-right: 10px;
+    }
+
+    .chat-form button {
+        padding: 10px 20px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-header">
+        <h5>Conversación con {{ other_user.first_name }}</h5>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+        {% include 'vistas/partials/messages.html' %}
+    </div>
+
+    <form method="post" id="send-message-form" class="chat-form">
+        {% csrf_token %}
+        <input type="text" name="content" id="contentInput" placeholder="Escribe un mensaje..." required>
+        <button type="submit">Enviar</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function scrollToBottom() {
+        const chatMessages = document.getElementById("chat-messages");
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function fetchMessages() {
+        fetch("{% url 'fetch_messages' uid=other_user.uid %}")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("chat-messages").innerHTML = data.html;
+                scrollToBottom();
+            });
+    }
+
+    document.getElementById("send-message-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const input = document.getElementById("contentInput");
+        const content = input.value.trim();
+        if (!content) return;
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch("{% url 'chat' uid=other_user.uid %}", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: new URLSearchParams({ content: content })
+        }).then(response => {
+            if (response.ok) {
+                input.value = "";
+                fetchMessages();
+            }
+        });
+    });
+
+    setInterval(fetchMessages, 3000);
+    window.onload = scrollToBottom;
+</script>
+{% endblock %}
