@@ -13,6 +13,16 @@ urlpatterns = [
     path('usuarios/', views.user_list, name='user_list'),
     path('chat/<uuid:uid>/', views.chat_view, name='chat'),
     path('chat/<uuid:uid>/fetch/', views.fetch_messages, name='fetch_messages'),
+    path('libros/', views.libros_view, name='libros'),
+    path('libros/crear/', views.crear_libro, name='crear_libro'),
+    path('libros/modificar/<uuid:id_libro>/', views.modificar_libro, name='modificar_libro'),
+    path('libros/eliminar/<uuid:id_libro>/', views.eliminar_libro, name='eliminar_libro'),
+    path('api/libro/<uuid:id_libro>/', views.LibroAPIView.as_view(), name='libro_api'),
+
+
+
+
+
     
 
     

@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mis Libros | BookSwap{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/libros.css' %}">
+{% endblock %}
+
+{% block content %}
+
+
+<div class="container my-5">
+    <h2 class="text-center mb-4">Mis Libros</h2>
+
+    <div class="row" id="librosRow">
+        {% for libro in libros %}
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                {% if libro.imagenes.all %}
+                <img src="{{ libro.imagenes.all.0.imagen.url }}" class="card-img-top" alt="Imagen de {{ libro.titulo }}">
+                {% else %}
+                <img src="{% static 'img/default_book.jpg' %}" class="card-img-top" alt="Imagen por defecto">
+                {% endif %}
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ libro.titulo }}</h5>
+                    <p class="card-text">
+                        Autor: {{ libro.autor }}<br>
+                        Estado: {{ libro.estado }}<br>
+                        Cantidad: {{ libro.cantidad }}
+                    </p>
+                    <button class="btn btn-primary btn-sm mt-2" onclick="seleccionarLibro('{{ libro.id_libro }}')" data-bs-toggle="modal" data-bs-target="#detalleLibroModal">
+                        Detalles
+                    </button>                                                            
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Card para agregar nuevo libro -->
+        <div class="col-md-3 mb-4">
+            <div class="card text-center border-dashed" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#crearLibroModal">
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <h5 class="card-title">Agregar libro +</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔽 Modal CREAR libro -->
+    {% include 'vistas/partials/modal_crear_libro.html' %}
+</div>
+
+<!-- 🔽 Modal DETALLE libro -->
+<div class="modal fade" id="detalleLibroModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalles del Libro</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="toggleEdit">
+            <label class="form-check-label" for="toggleEdit">Editar libro</label>
+        </div>
+
+        <form id="libroForm">
+            <div class="mb-3">
+                <label for="titulo" class="form-label">Título</label>
+                <input type="text" id="titulo" class="form-control" disabled>
+            </div>
+            <div class="mb-3">
+                <label for="autor" class="form-label">Autor</label>
+                <input type="text" id="autor" class="form-control" disabled>
+            </div>
+            <div class="mb-3">
+                <label for="estado" class="form-label">Estado</label>
+                <input type="text" id="estado" class="form-control" disabled>
+            </div>
+            <div class="mb-3">
+                <label for="genero" class="form-label">Género</label>
+                <input type="text" id="genero" class="form-control" disabled>
+            </div>
+            <div class="mb-3">
+                <label for="paginas" class="form-label">Páginas</label>
+                <input type="number" id="paginas" class="form-control" disabled>
+            </div>
+            <div class="mb-3">
+                <label for="cantidad" class="form-label">Cantidad</label>
+                <input type="number" id="cantidad" class="form-control" disabled>
+            </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-warning" id="guardarCambiosBtn" data-bs-toggle="modal" data-bs-target="#confirmarModificarModal" disabled>Modificar</button>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmarEliminarModal" disabled>Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🔽 Modal CONFIRMAR modificar -->
+<div class="modal fade" id="confirmarModificarModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar cambios</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de que deseas guardar los cambios en este libro?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-warning" id="confirmarGuardarBtn">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🔽 Modal CONFIRMAR eliminar -->
+<div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar libro</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Esta acción eliminará este libro permanentemente. ¿Deseas continuar?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmarEliminarBtn">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% block scripts %}
+<script src="{% static 'js/libro.js' %}"></script>
+{% endblock %}
+
+
+{% endblock %}
+
+
