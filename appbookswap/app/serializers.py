@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Usuario
+from .models import Usuario, Libro
 
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,11 +9,19 @@ class UsuarioSerializer(serializers.ModelSerializer):
             'first_name',       
             'email',
             'numero',
-            'anno_nacimiento',
+            'fecha_nacimiento',
             'preferencias',     
             'ubicacion',
             'img_perfil'
         ]
         extra_kwargs = {
             'email': {'read_only': True},
+        }
+class LibroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Libro
+        fields = '__all__'
+        extra_kwargs = {
+            'id_libro': {'read_only': True},
+            'user': {'read_only': True}
         }

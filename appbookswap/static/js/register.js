@@ -4,7 +4,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     const nombre = document.getElementById('nombre').value.trim();
     const correo = document.getElementById('email').value.trim();
     const numero = document.getElementById('numero').value.trim();
-    const anno = document.getElementById('anno_nacimiento').value.trim();
+    const fecha = document.getElementById('fecha_nacimiento').value.trim();
     const preferencias = document.getElementById('preferencias').value.trim();
     const ubicacion = document.getElementById('ubicacion').value.trim();
     const password = document.getElementById('password').value;
@@ -13,10 +13,22 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     const messageBox = document.getElementById('message');
     messageBox.className = 'message';
 
+    // Validar contraseñas
     if (password !== confirmPassword) {
         messageBox.textContent = 'Las contraseñas no coinciden.';
         messageBox.classList.add('error');
         return;
+    }
+
+    // Validar fecha de nacimiento no sea en el futuro
+    if (fecha) {
+        const fechaNacimiento = new Date(fecha);
+        const hoy = new Date();
+        if (fechaNacimiento > hoy) {
+            messageBox.textContent = 'La fecha de nacimiento no puede ser en el futuro.';
+            messageBox.classList.add('error');
+            return;
+        }
     }
 
     try {
@@ -30,14 +42,13 @@ document.getElementById('registerForm').addEventListener('submit', async functio
                 nombre,
                 correo,
                 numero,
-                anno_nacimiento: anno,
+                fecha_nacimiento: fecha,
                 preferencias,
                 ubicacion,
                 password
             })
         });
 
-        // ✅ Validar si la respuesta es válida antes de convertirla en JSON
         if (!response.ok) {
             throw new Error('Respuesta inválida del servidor');
         }
@@ -66,7 +77,6 @@ function getCookie(name) {
         const cookies = document.cookie.split(';');
         for (let cookie of cookies) {
             cookie = cookie.trim();
-            // Verifica que la cookie comience con el nombre deseado
             if (cookie.startsWith(name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;

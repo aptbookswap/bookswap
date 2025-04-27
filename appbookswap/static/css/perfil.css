@@ -1,0 +1,35 @@
+/* estilos para perfil.html */
+#imgPerfilPreview {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+}
+
+#perfilForm input:disabled {
+    background-color: #f1f3f5;
+}
+
+#perfilForm .form-control {
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+#perfilForm .form-control:focus {
+    background-color: #e7f1ff;
+}
+
+#perfilForm button {
+    min-width: 120px;
+}
+
+@media (max-width: 768px) {
+    .row {
+        flex-direction: column;
+        align-items: center;
+    }
+    #perfilForm {
+        width: 100%;
+    }
+}
