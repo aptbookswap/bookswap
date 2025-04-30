@@ -5,10 +5,43 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/libros.css' %}">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet">
+<style>
+    .map-container {
+        height: 500px;
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .map-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+    
+    .map-content {
+        text-align: center;
+        padding: 20px;
+    }
+    
+    #map {
+        width: 100%;
+        height: 100%;
+        min-height: 400px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-
 
 <div class="container my-5">
     <h2 class="text-center mb-4">Mis Libros</h2>
@@ -47,101 +80,102 @@
         </div>
     </div>
 
-    <!-- 🔽 Modal CREAR libro -->
+    <!-- Modal CREAR libro -->
     {% include 'vistas/partials/modal_crear_libro.html' %}
 </div>
 
-<!-- 🔽 Modal DETALLE libro -->
+<!-- Modal DETALLE libro -->
 <div class="modal fade" id="detalleLibroModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Detalles del Libro</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-check form-switch mb-3">
-            <input class="form-check-input" type="checkbox" id="toggleEdit">
-            <label class="form-check-label" for="toggleEdit">Editar libro</label>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles del Libro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="toggleEdit">
+                    <label class="form-check-label" for="toggleEdit">Editar libro</label>
+                </div>
+
+                <form id="libroForm">
+                    <div class="mb-3">
+                        <label for="titulo" class="form-label">Título</label>
+                        <input type="text" id="titulo" class="form-control" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="autor" class="form-label">Autor</label>
+                        <input type="text" id="autor" class="form-control" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="estado" class="form-label">Estado</label>
+                        <input type="text" id="estado" class="form-control" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="genero" class="form-label">Género</label>
+                        <input type="text" id="genero" class="form-control" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="paginas" class="form-label">Páginas</label>
+                        <input type="number" id="paginas" class="form-control" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cantidad" class="form-label">Cantidad</label>
+                        <input type="number" id="cantidad" class="form-control" disabled>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-warning" id="guardarCambiosBtn" data-bs-toggle="modal" data-bs-target="#confirmarModificarModal" disabled>Modificar</button>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmarEliminarModal" disabled>Eliminar</button>
+            </div>
         </div>
-
-        <form id="libroForm">
-            <div class="mb-3">
-                <label for="titulo" class="form-label">Título</label>
-                <input type="text" id="titulo" class="form-control" disabled>
-            </div>
-            <div class="mb-3">
-                <label for="autor" class="form-label">Autor</label>
-                <input type="text" id="autor" class="form-control" disabled>
-            </div>
-            <div class="mb-3">
-                <label for="estado" class="form-label">Estado</label>
-                <input type="text" id="estado" class="form-control" disabled>
-            </div>
-            <div class="mb-3">
-                <label for="genero" class="form-label">Género</label>
-                <input type="text" id="genero" class="form-control" disabled>
-            </div>
-            <div class="mb-3">
-                <label for="paginas" class="form-label">Páginas</label>
-                <input type="number" id="paginas" class="form-control" disabled>
-            </div>
-            <div class="mb-3">
-                <label for="cantidad" class="form-label">Cantidad</label>
-                <input type="number" id="cantidad" class="form-control" disabled>
-            </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-warning" id="guardarCambiosBtn" data-bs-toggle="modal" data-bs-target="#confirmarModificarModal" disabled>Modificar</button>
-        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmarEliminarModal" disabled>Eliminar</button>
-      </div>
     </div>
-  </div>
 </div>
 
-<!-- 🔽 Modal CONFIRMAR modificar -->
+<!-- Modal CONFIRMAR modificar -->
 <div class="modal fade" id="confirmarModificarModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Confirmar cambios</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        ¿Estás seguro de que deseas guardar los cambios en este libro?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-warning" id="confirmarGuardarBtn">Guardar cambios</button>
-      </div>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar cambios</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas guardar los cambios en este libro?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" id="confirmarGuardarBtn">Guardar cambios</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
-<!-- 🔽 Modal CONFIRMAR eliminar -->
+<!-- Modal CONFIRMAR eliminar -->
 <div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Eliminar libro</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        Esta acción eliminará este libro permanentemente. ¿Deseas continuar?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" id="confirmarEliminarBtn">Eliminar</button>
-      </div>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Eliminar libro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Esta acción eliminará este libro permanentemente. ¿Deseas continuar?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmarEliminarBtn">Eliminar</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
-
 
 {% block scripts %}
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
 <script src="{% static 'js/libro.js' %}"></script>
+<script src="{% static 'js/mapa.js' %}"></script>
 {% endblock %}
 
 
