@@ -9,70 +9,82 @@
 
 {% block content %}
 <div class="container my-5">
-    <h2 class="text-center mb-4">Mi Perfil</h2>
-    <div class="row">
-        <!-- Columna izquierda: imagen de perfil -->
-        <div class="col-md-4 text-center">
-            <img id="imgPerfilPreview" src="{% static 'img/perfil.jpg' %}" class="rounded-circle img-thumbnail mb-3" width="200" height="200" alt="Imagen de perfil">
-            <input type="file" id="imgPerfilInput" accept="image/*" class="form-control mb-3" style="display: none;" disabled>
-            <button id="changeImgBtn" class="btn btn-outline-secondary btn-sm" disabled>Cambiar imagen</button>
-        </div>
+  <div class="row g-4">
 
-        <!-- Columna derecha: formulario -->
-        <div class="col-md-8">
-            <!-- Switch para editar -->
-            <div class="form-check form-switch text-center mb-4">
-                <input class="form-check-input" type="checkbox" id="toggleEdit">
-                <label class="form-check-label" for="toggleEdit">Quiero editar mi perfil</label>
-            </div>
-
-            <form id="perfilForm">
-                <div class="mb-3">
-                    <label for="nombre" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" id="nombre" disabled>
-                </div>
-                <div class="mb-3">
-                    <label for="correo" class="form-label">Correo electrónico</label>
-                    <input type="email" class="form-control" id="correo" disabled>
-                </div>
-                <div class="mb-3">
-                    <label for="numero" class="form-label">Número</label>
-                    <input type="text" class="form-control" id="numero" disabled>
-                </div>
-                <div class="mb-3">
-                    <label for="fecha_nacimiento" class="form-label">Año de nacimiento</label>
-                    <input type="date" class="form-control" id="fecha_nacimiento" disabled>
-                </div>
-                <div class="mb-3">
-                    <label for="preferencias" class="form-label">Preferencias</label>
-                    <input type="text" class="form-control" id="preferencias" disabled>
-                </div>
-                <div class="mb-3">
-                    <label for="ubicacion" class="form-label">Ubicación</label>
-                    <input type="text" class="form-control" id="ubicacion" disabled>
-                </div>
-                <button type="button" class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#confirmarModificarModal">Modificar</button>
-                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmarEliminarModal">Eliminar cuenta</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- 🔽 NUEVA SECCIÓN: Lista de usuarios -->
-    <hr class="my-5">
-    <div class="row">
-        <h4 class="text-center mb-3">Chatear con otros usuarios</h4>
-        <ul class="list-group col-md-6 mx-auto">
-            {% for user in users %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ user.first_name }} ({{ user.email }})
-                    <a href="{% url 'chat' uid=user.uid %}" class="btn btn-sm btn-outline-primary">Chatear</a>
-                </li>
-            {% empty %}
-                <li class="list-group-item text-center">No hay otros usuarios disponibles</li>
-            {% endfor %}
+    <!-- 🟦 Chat a la izquierda -->
+    <div class="col-md-5">
+      <div class="card shadow-sm p-4">
+        <h5 class="fw-bold text-center mb-3">📬 Chatear con otros usuarios</h5>
+        <ul class="list-group list-group-flush">
+          {% for user in users %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              {{ user.first_name }} ({{ user.email }})
+              <a href="{% url 'chat' uid=user.uid %}" class="btn btn-sm btn-outline-primary">Chatear</a>
+            </li>
+          {% empty %}
+            <li class="list-group-item text-center">No hay otros usuarios disponibles</li>
+          {% endfor %}
         </ul>
+      </div>
     </div>
+
+    <!-- 👤 Perfil a la derecha -->
+    <div class="col-md-7">
+      <div class="card shadow-lg border-0 rounded-4 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="fw-bold mb-0">👤 Mi Perfil</h4>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="toggleEdit">
+            <label class="form-check-label small" for="toggleEdit">Editar</label>
+          </div>
+        </div>
+
+        <div class="text-center mb-4">
+          <img id="imgPerfilPreview" src="{% static 'img/perfil.jpg' %}" class="rounded-circle shadow-sm mb-2" width="120" height="120" alt="Imagen de perfil">
+          <input type="file" id="imgPerfilInput" accept="image/*" class="form-control d-none" disabled>
+          <br>
+          <button id="changeImgBtn" class="btn btn-outline-secondary btn-sm mt-2" disabled>Cambiar imagen</button>
+        </div>
+
+        <form id="perfilForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="nombre" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="nombre" disabled>
+            </div>
+            <div class="col-md-6">
+              <label for="correo" class="form-label">Correo electrónico</label>
+              <input type="email" class="form-control" id="correo" disabled>
+            </div>
+            <div class="col-md-6">
+              <label for="numero" class="form-label">Número</label>
+              <input type="text" class="form-control" id="numero" disabled>
+            </div>
+            <div class="col-md-6">
+              <label for="fecha_nacimiento" class="form-label">Año de nacimiento</label>
+              <input type="date" class="form-control" id="fecha_nacimiento" disabled>
+            </div>
+            <div class="col-md-6">
+              <label for="preferencias" class="form-label">Preferencias</label>
+              <input type="text" class="form-control" id="preferencias" disabled>
+            </div>
+            <div class="col-md-6">
+              <label for="ubicacion" class="form-label">Ubicación</label>
+              <input type="text" class="form-control" id="ubicacion" disabled>
+            </div>
+          </div>
+
+          <div class="mt-4 text-end">
+            <button type="button" class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#confirmarModificarModal">Modificar</button>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmarEliminarModal">Eliminar cuenta</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
 </div>
+
 
 <!-- Modales -->
 <div class="modal fade" id="confirmarModificarModal" tabindex="-1" aria-hidden="true">
