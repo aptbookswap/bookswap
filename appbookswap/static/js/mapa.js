@@ -29,80 +29,94 @@ document.addEventListener('DOMContentLoaded', function () {
     let geolocate = null;
     let userLocation = null;
     let destinationMarker = null;
+    let routeLayerId = 'route';
     let destinationPopup = null;
-    const routeLayerId = 'route';
 
+    // Función para inicializar el mapa
     function initMap() {
-        if (map) return;
-
         mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
-
-        // 📍 Coordenadas por defecto: Viña del Mar
+        
         const defaultCoords = [-71.542969, -33.015347];
 
         map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/outdoors-v12',
             center: defaultCoords,
-            zoom: 12
+            zoom: 5,
+            dragRotate: false,
+            touchZoomRotate: false
         });
-
-        // Agrega control de geolocalización
-        geolocate = new mapboxgl.GeolocateControl({ trackUserLocation: false, showUserLocation: true });
+        
+        geolocate = new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: false
+            },
+            trackUserLocation: false,
+            showUserLocation: true,
+            showAccuracyCircle: false
+        });
         map.addControl(geolocate);
-
+        
+        // Evento de geolocalización
         geolocate.on('geolocate', (e) => {
             userLocation = [e.coords.longitude, e.coords.latitude];
-            map.flyTo({ center: userLocation, zoom: 13 });
+            map.flyTo({
+                center: userLocation,
+                zoom: 13,
+                essential: true
+            });
         });
-
+        
+        // Evento al cargar el mapa
         map.on('load', () => {
             geolocate.trigger();
         });
-
+        
+        // Evento para agregar marcadores
         map.on('contextmenu', (e) => {
-            if (destinationMarker) destinationMarker.remove();
-            if (destinationPopup) destinationPopup.remove();
-
-            destinationMarker = new mapboxgl.Marker().setLngLat([e.lngLat.lng, e.lngLat.lat]).addTo(map);
-            destinationPopup = new mapboxgl.Popup()
+            e.preventDefault();
+            if (destinationMarker) {
+                destinationMarker.remove();
+                if (destinationPopup) {
+                    destinationPopup.remove();
+                    destinationPopup = null;
+                }
+            }
+            destinationMarker = new mapboxgl.Marker()
                 .setLngLat([e.lngLat.lng, e.lngLat.lat])
-                .setHTML('Libro 123 - Luis Pérez')
                 .addTo(map);
-
+            
+            // Crear y mostrar el popup del destino
+            const message = 'Libro 123 - Luis Perez';
+            destinationPopup = new mapboxgl.Popup({ closeOnClick: true })
+                .setLngLat([e.lngLat.lng, e.lngLat.lat])
+                .setHTML(message)
+                .addTo(map);
+            
             if (userLocation) {
                 getDirections(userLocation, [e.lngLat.lng, e.lngLat.lat]);
             }
         });
-
+        
+        // Añadir controles de navegación
         map.addControl(new mapboxgl.NavigationControl());
     }
 
+    // Función para obtener direcciones
     function getDirections(start, end) {
-        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}&language=es`;
+        
         fetch(url)
-            .then(res => res.json())
-            .then(data => drawRoute(data.routes[0].geometry))
-            .catch(() => removeRoute());
+            .then(response => response.json())
+            .then(data => {
+                const route = data.routes[0];
+                drawRoute(route.geometry);
+            })
+            .catch(error => {
+                console.error('Error al obtener las indicaciones:', error);
+                removeRoute();
+            });
     }
-
-    function drawRoute(geometry) {
-        removeRoute();
-        map.addSource('route', {
-            'type': 'geojson',
-            'data': { 'type': 'Feature', 'geometry': geometry }
-        });
-        map.addLayer({
-            'id': routeLayerId,
-            'type': 'line',
-            'source': 'route',
-            'layout': { 'line-join': 'round', 'line-cap': 'round' },
-            'paint': { 'line-color': '#3887be', 'line-width': 5 }
-        });
-    }
-
-    function removeRoute() {
-        if (map.getLayer(routeLayerId)) map.removeLayer(routeLayerId);
-        if (map.getSource('route')) map.removeSource('route');
-    }
+    
+    
 });
