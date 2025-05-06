@@ -51,8 +51,7 @@
 
                 <div class="d-flex" id="authButtons">
                     <button id="loginBtn" class="btn btn-outline-primary me-2">Iniciar sesión</button>
-                    <button id="registerBtn"><a href="{% url 'registro' %}" class="btn btn-primary">Registrarse</a>
-                    </button>
+                    <a href="{% url 'registro' %}" class="btn btn-primary" id="registerBtn">Registrarse</a>
                 </div>
                 <div class="d-flex align-items-center d-none" id="userMenu">
                     <img src="{% static 'img/perfil.jpg' %}" class="user-avatar" id="userAvatar">
