@@ -40,7 +40,7 @@
         </div>
 
         <div class="text-center mb-4">
-          <img id="imgPerfilPreview" src="{% static 'img/perfil.jpg' %}" class="rounded-circle shadow-sm mb-2" width="120" height="120" alt="Imagen de perfil">
+          <img src="{{ user.img_perfil.url }}" alt="Perfil" class="user-avatar" id="imgPerfilPreview">
           <input type="file" id="imgPerfilInput" accept="image/*" class="form-control d-none" disabled>
           <br>
           <button id="changeImgBtn" class="btn btn-outline-secondary btn-sm mt-2" disabled>Cambiar imagen</button>

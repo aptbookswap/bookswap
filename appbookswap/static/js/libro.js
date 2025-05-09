@@ -1,7 +1,3 @@
-// static/js/libro.js
-
-// Removed duplicate declaration of libroActivoId
-
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -19,10 +15,8 @@ function getCookie(name) {
 
 let libroActivoId = null;
 
-
-
 function seleccionarLibro(id) {
-    libroActivoId = id; // No parseInt porque es texto UUID
+    libroActivoId = id;
 
     if (!libroActivoId) {
         console.error("ID de libro inválido:", id);
@@ -32,9 +26,7 @@ function seleccionarLibro(id) {
 
     fetch(`/api/libro/${libroActivoId}/`)
         .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`Error ${response.status}`);
             return response.json();
         })
         .then(data => {
@@ -50,6 +42,16 @@ function seleccionarLibro(id) {
             });
 
             document.getElementById('guardarCambiosBtn').disabled = true;
+
+            // Mostrar imagen si existe
+            const imagen = document.getElementById('detalleImagen');
+            if (data.imagenes && data.imagenes.length > 0) {
+                imagen.src = data.imagenes[0];
+                imagen.classList.remove('d-none');
+            } else {
+                imagen.src = '';
+                imagen.classList.add('d-none');
+            }
         })
         .catch(error => {
             console.error("Error cargando libro:", error);
@@ -57,10 +59,7 @@ function seleccionarLibro(id) {
         });
 }
 
-
-
 document.addEventListener('DOMContentLoaded', function () {
-    // Switch para habilitar edición
     const toggleEdit = document.getElementById('toggleEdit');
     if (toggleEdit) {
         toggleEdit.addEventListener('change', function () {
@@ -72,11 +71,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Confirmar guardar cambios
     const confirmarGuardarBtn = document.getElementById('confirmarGuardarBtn');
     confirmarGuardarBtn.addEventListener('click', () => {
         if (!libroActivoId) return;
-    
+
         const data = {
             titulo: document.getElementById('titulo').value,
             autor: document.getElementById('autor').value,
@@ -85,8 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
             paginas: parseInt(document.getElementById('paginas').value),
             cantidad: parseInt(document.getElementById('cantidad').value)
         };
-        
-        
+
         fetch(`/api/libro/${libroActivoId}/`, {
             method: 'PUT',
             headers: {
@@ -95,7 +92,6 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: JSON.stringify(data)
         })
-        
         .then(res => {
             if (res.ok) {
                 alert("Libro modificado con éxito");
@@ -106,9 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(err => console.error("Error modificando libro:", err));
     });
-    
 
-    // Confirmar eliminar libro
     const confirmarEliminarBtn = document.getElementById('confirmarEliminarBtn');
     confirmarEliminarBtn.addEventListener('click', () => {
         if (!libroActivoId) return;

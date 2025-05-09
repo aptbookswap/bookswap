@@ -9,9 +9,16 @@
     <!-- Iconos y estilos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/register.css' %}">
+
 </head>
 <body>
+
     <div class="login-container">
+        <!-- Botón flecha dentro del formulario -->
+        <a href="{% url 'index' %}" class="btn-back" title="Volver al inicio">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+
         <h1>Crear Cuenta</h1>
         <p>Únete a la comunidad BookSwap</p>
 
@@ -34,8 +41,8 @@
                     <input type="text" id="numero" placeholder="+56 9 1234 5678">
                 </div>
                 <div class="form-group">
-                    <label for="fecha_nacimiento">fecha de nacimiento</label>
-                    <input type="date" id="fecha_nacimiento" required placeholder="DD/MM/AAAA">
+                    <label for="fecha_nacimiento">Fecha de nacimiento</label>
+                    <input type="date" id="fecha_nacimiento" required>
                 </div>
             </div>
 
@@ -44,7 +51,6 @@
                     <label for="preferencias">Preferencias</label>
                     <input type="text" id="preferencias" placeholder="Fantasía, Misterio, etc.">
                     <small class="form-text">Separa los géneros con comas</small>
-
                 </div>
                 <div class="form-group">
                     <label for="ubicacion">Ubicación</label>

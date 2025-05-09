@@ -1,7 +1,10 @@
 from rest_framework import serializers
-from .models import Usuario, Libro
+from .models import Usuario, Libro, ImagenLibro
 
 class UsuarioSerializer(serializers.ModelSerializer):
+
+    img_perfil = serializers.ImageField(use_url=True)
+    
     class Meta:
         model = Usuario
         fields = [
@@ -17,7 +20,14 @@ class UsuarioSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'email': {'read_only': True},
         }
+class ImagenLibroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImagenLibro
+        fields = ['imagen']
+
 class LibroSerializer(serializers.ModelSerializer):
+    imagenes = ImagenLibroSerializer(many=True, read_only=True)
+
     class Meta:
         model = Libro
         fields = '__all__'

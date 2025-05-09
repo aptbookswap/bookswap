@@ -20,11 +20,4 @@ urlpatterns = [
     path('api/libro/<uuid:id_libro>/', views.LibroAPIView.as_view(), name='libro_api'),
 
 
-
-
-
-    
-
-    
-
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

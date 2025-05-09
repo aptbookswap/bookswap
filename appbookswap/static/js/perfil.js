@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    const formFields = ['nombre', 'correo', 'numero', 'fecha_nacimiento', 'preferencias', 'ubicacion'];
+    const formFields = ['nombre', 'correo', 'numero', 'fecha_nacimiento', 'preferencias', 'ubicacion', 'img_perfil'];
 
     // Cargar datos del perfil
     fetch(`/api/perfil/${usuario.uid}/`)
