@@ -10,8 +10,6 @@
 {% block content %}
 <div class="container my-5">
   <div class="row g-4">
-
-    <!-- 🟦 Chat a la izquierda -->
     <div class="col-md-5">
       <div class="card shadow-sm p-4">
         <h5 class="fw-bold text-center mb-3">📬 Chatear con otros usuarios</h5>
@@ -28,7 +26,6 @@
       </div>
     </div>
 
-    <!-- 👤 Perfil a la derecha -->
     <div class="col-md-7">
       <div class="card shadow-lg border-0 rounded-4 p-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -50,27 +47,39 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label for="nombre" class="form-label">Nombre</label>
-              <input type="text" class="form-control" id="nombre" disabled>
+              <input type="text" class="form-control" id="nombre" value="{{ user.first_name }}" disabled>
             </div>
             <div class="col-md-6">
               <label for="correo" class="form-label">Correo electrónico</label>
-              <input type="email" class="form-control" id="correo" disabled>
+              <input type="email" class="form-control" id="correo" value="{{ user.email }}" disabled>
             </div>
             <div class="col-md-6">
               <label for="numero" class="form-label">Número</label>
-              <input type="text" class="form-control" id="numero" disabled>
+              <input type="text" class="form-control" id="numero" value="{{ user.numero }}" disabled>
             </div>
             <div class="col-md-6">
               <label for="fecha_nacimiento" class="form-label">Año de nacimiento</label>
-              <input type="date" class="form-control" id="fecha_nacimiento" disabled>
+              <input type="date" class="form-control" id="fecha_nacimiento" value="{{ user.fecha_nacimiento }}" disabled>
             </div>
             <div class="col-md-6">
-              <label for="preferencias" class="form-label">Preferencias</label>
-              <input type="text" class="form-control" id="preferencias" disabled>
+              <label class="form-label">Preferencias</label>
+              <select id="preferenciasDropdown" class="form-control" style="display: none;">
+                <option value="" hidden>Selecciona una preferencia</option>
+                <option value="Fantasía">Fantasía</option>
+                <option value="Misterio">Misterio</option>
+                <option value="Romance">Romance</option>
+                <option value="Finanzas">Finanzas</option>
+                <option value="Terror">Terror</option>
+                <option value="Psicología">Psicología</option>
+                <option value="Otro">Otro</option>
+              </select>
+              <div id="preferenciasTags" class="tags-container mt-2"></div>
+              <div id="preferenciasReadOnly" class="mt-2 text-muted"></div>
+              <input type="hidden" id="preferenciasInput" name="preferencias" value="{{ user.preferencias }}">
             </div>
             <div class="col-md-6">
               <label for="ubicacion" class="form-label">Ubicación</label>
-              <input type="text" class="form-control" id="ubicacion" disabled>
+              <input type="text" class="form-control" id="ubicacion" value="{{ user.ubicacion }}" disabled>
             </div>
           </div>
 
@@ -81,18 +90,15 @@
         </form>
       </div>
     </div>
-
   </div>
 </div>
 
-
-<!-- Modales -->
-<div class="modal fade" id="confirmarModificarModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="confirmarModificarModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Confirmar cambios</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         ¿Estás seguro de que deseas guardar los cambios en tu perfil?
@@ -105,12 +111,12 @@
   </div>
 </div>
 
-<div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="confirmarEliminarModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Eliminar cuenta</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         Esta acción eliminará tu cuenta permanentemente. ¿Deseas continuar?

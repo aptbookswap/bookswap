@@ -1,0 +1,50 @@
+.modal-xl .form-control,
+.modal-xl .form-select {
+  font-size: 15px;
+  padding: 10px;
+}
+
+.modal-xl .modal-body {
+  padding: 2rem;
+}
+
+#detalleImagen {
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  background-color: #f0f8ff;
+  color: #2c3e50;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #3498db;
+}
+
+.tag .remove-tag {
+  background-color: #3498db;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tag .remove-tag:hover {
+  background-color: #2a7fbf;
+}
