@@ -1,23 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from .models import Usuario
-from .serializers import UsuarioSerializer
+from django.contrib import messages
 from django.contrib.auth import get_user_model, authenticate, login as auth_login
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.template.loader import render_to_string
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from django.utils.decorators import method_decorator
-from .models import Message
-from .forms import MessageForm
-from django.template.loader import render_to_string 
-from django.contrib.auth.decorators import login_required
-from .models import Libro, ImagenLibro
-from .forms import LibroForm, ImagenLibroForm
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
-from .serializers import LibroSerializer
-from django.contrib import messages
 import json
 import datetime
+
+from .models import Usuario, Libro, ImagenLibro, Message
+from .serializers import UsuarioSerializer, LibroSerializer
+from .forms import MessageForm
 
 User = get_user_model()
 
@@ -28,12 +24,17 @@ def index(request):
 def registro(request):
     return render(request, 'vistas/register.html')
 
+@login_required
 def perfil(request):
     usuarios = Usuario.objects.exclude(id=request.user.id)
     return render(request, 'vistas/perfil.html', {'users': usuarios})
 
+@login_required
+def user_list(request):
+    usuarios = Usuario.objects.exclude(id=request.user.id)
+    return render(request, 'vistas/user_list.html', {'users': usuarios})
 
-# Registro de usuario
+# Registro de usuario (API)
 @csrf_exempt
 def api_registro(request):
     if request.method != 'POST':
@@ -46,12 +47,11 @@ def api_registro(request):
         if not password or len(password) < 6:
             return JsonResponse({'success': False, 'mensaje': 'Contraseña muy corta'}, status=400)
 
-        # Validar que la fecha no sea en el futuro
         fecha_nacimiento = data.get('fecha_nacimiento')
         if fecha_nacimiento:
-            fecha_nacimiento_dt = datetime.datetime.strptime(fecha_nacimiento, "%Y-%m-%d").date()
-            if fecha_nacimiento_dt > datetime.date.today():
-                return JsonResponse({'success': False, 'mensaje': 'La fecha de nacimiento no puede ser en el futuro.'}, status=400)
+            fecha = datetime.datetime.strptime(fecha_nacimiento, "%Y-%m-%d").date()
+            if fecha > datetime.date.today():
+                return JsonResponse({'success': False, 'mensaje': 'La fecha no puede ser futura'}, status=400)
 
         usuario = Usuario(
             username=data.get('correo'),
@@ -71,7 +71,7 @@ def api_registro(request):
         print(f'Error en el registro: {e}')
         return JsonResponse({'success': False, 'mensaje': 'Error interno'}, status=500)
 
-# Login de usuario con auth_login
+# Login de usuario (API)
 @csrf_exempt
 def login_usuario(request):
     if request.method != 'POST':
@@ -90,8 +90,8 @@ def login_usuario(request):
 
         user = authenticate(request, username=username, password=password)
 
-        if user is not None:
-            auth_login(request, user)  # ✅ Aquí se guarda la sesión
+        if user:
+            auth_login(request, user)
             return JsonResponse({
                 'success': True,
                 'nombre': user.first_name,
@@ -105,8 +105,7 @@ def login_usuario(request):
         print(f'Error login: {e}')
         return JsonResponse({'success': False, 'mensaje': 'Error interno'}, status=500)
 
-
-# Perfil con DRF
+# Perfil del usuario (DRF)
 @method_decorator(csrf_exempt, name='dispatch')
 class PerfilUsuarioAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Usuario.objects.all()
@@ -114,24 +113,16 @@ class PerfilUsuarioAPIView(RetrieveUpdateDestroyAPIView):
     lookup_field = 'uid'
     parser_classes = [MultiPartParser, FormParser]
 
-
-@login_required
-def user_list(request):
-    users = Usuario.objects.exclude(id=request.user.id)
-    return render(request, 'vistas/user_list.html', {'users': users})
-
-
+# Chat y mensajes
 @login_required
 def chat_view(request, uid):
     other_user = get_object_or_404(Usuario, uid=uid)
-
-    messages = Message.objects.filter(
+    messages_qs = Message.objects.filter(
         sender__uid=request.user.uid, recipient__uid=other_user.uid
     ) | Message.objects.filter(
         sender__uid=other_user.uid, recipient__uid=request.user.uid
     )
-
-    messages = messages.order_by('timestamp')
+    messages = messages_qs.order_by('timestamp')
 
     if request.method == 'POST':
         form = MessageForm(request.POST)
@@ -150,17 +141,14 @@ def chat_view(request, uid):
         'other_user': other_user
     })
 
-
 @login_required
 def fetch_messages(request, uid):
     other_user = get_object_or_404(Usuario, uid=uid)
-
     messages = Message.objects.filter(
         sender__uid=request.user.uid, recipient__uid=other_user.uid
     ) | Message.objects.filter(
         sender__uid=other_user.uid, recipient__uid=request.user.uid
-    )
-    messages = messages.order_by('timestamp')
+    ).order_by('timestamp')
 
     html = render_to_string('vistas/partials/messages.html', {
         'messages': messages,
@@ -168,24 +156,13 @@ def fetch_messages(request, uid):
     })
     return JsonResponse({'html': html})
 
-
-
-
-@method_decorator(csrf_exempt, name='dispatch')
-class LibroAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = Libro.objects.all()
-    serializer_class = LibroSerializer
-    lookup_field = 'id_libro'
-    parser_classes = [MultiPartParser, FormParser, JSONParser] 
-
-
-
+# Vista general de libros
 @login_required
 def libros_view(request):
     libros = Libro.objects.filter(user=request.user)
     return render(request, 'vistas/libros.html', {'libros': libros})
 
-
+# Crear libro (formulario)
 @csrf_exempt
 @login_required
 def crear_libro(request):
@@ -204,6 +181,8 @@ def crear_libro(request):
             ImagenLibro.objects.create(libro=libro, imagen=img)
 
         return redirect('libros')
+
+# Modificar libro (formulario)
 @login_required
 def modificar_libro(request, id_libro):
     libro = get_object_or_404(Libro, id=id_libro)
@@ -215,11 +194,9 @@ def modificar_libro(request, id_libro):
         libro.cantidad = request.POST.get('cantidad')
         libro.save()
         messages.success(request, 'Libro actualizado con éxito.')
-        return redirect('libros')  # Redirige a la lista de libros
-
     return redirect('libros')
 
-
+# Eliminar libro (formulario)
 @login_required
 def eliminar_libro(request, id_libro):
     libro = get_object_or_404(Libro, id=id_libro)
@@ -227,6 +204,12 @@ def eliminar_libro(request, id_libro):
     if request.method == 'POST':
         libro.delete()
         messages.success(request, 'Libro eliminado con éxito.')
-        return redirect('libros')
-
     return redirect('libros')
+
+# API para obtener, actualizar y eliminar libro
+@method_decorator(csrf_exempt, name='dispatch')
+class LibroAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Libro.objects.all()
+    serializer_class = LibroSerializer
+    lookup_field = 'id_libro'
+    parser_classes = [MultiPartParser, FormParser, JSONParser]

@@ -1,5 +1,6 @@
+// Espera a que el DOM esté completamente cargado
 document.addEventListener('DOMContentLoaded', function () {
-    // Mostrar el modal de login al hacer clic
+    // Mostrar el modal de login cuando se hace clic en el botón
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
@@ -8,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Manejar envío del formulario de login
+    // Manejo del envío del formulario de login
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async function (e) {
@@ -26,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getCookie('csrftoken')
                     },
-                    credentials: 'include', // ✅ Permitir cookies de sesión de Django
+                    credentials: 'include',
                     body: JSON.stringify({
                         identificador,
                         password
@@ -41,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     messageBox.textContent = 'Inicio de sesión exitoso';
                     messageBox.classList.add('success');
 
-                    // Ocultar modal
+                    // Ocultar modal de login
                     const modalElement = document.getElementById('loginModal');
                     const modalInstance = bootstrap.Modal.getInstance(modalElement);
                     modalInstance.hide();
@@ -51,12 +52,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('userMenu').classList.remove('d-none');
                     document.getElementById('userEmailDisplay').textContent = data.nombre;
 
-                    // Guardar datos en localStorage (opcional si quieres usarlo para JS)
+                    // Guardar datos en localStorage
                     localStorage.setItem('usuarioActivo', JSON.stringify(data));
 
-                    // Recargar la página para aplicar la sesión
+                    // Recargar la página para aplicar sesión
                     window.location.reload();
-
                 } else {
                     messageBox.textContent = data.mensaje || 'Credenciales incorrectas.';
                     messageBox.classList.add('error');
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Mostrar datos si hay sesión activa
+    // Si hay sesión en localStorage, mostrar datos del usuario
     const sessionData = localStorage.getItem('usuarioActivo');
     if (sessionData) {
         const data = JSON.parse(sessionData);
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('userEmailDisplay').textContent = data.nombre;
     }
 
-    // Logout
+    // Manejar cierre de sesión (logout)
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// 👇 Utilidad para obtener el CSRF Token desde cookies
+// Obtiene un token CSRF desde las cookies
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

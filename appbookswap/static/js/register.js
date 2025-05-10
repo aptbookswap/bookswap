@@ -1,11 +1,13 @@
+// Manejador de envío del formulario de registro
 document.getElementById('registerForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
+    // Obtener valores del formulario
     const nombre = document.getElementById('nombre').value.trim();
     const correo = document.getElementById('email').value.trim();
     const numero = document.getElementById('numero').value.trim();
     const fecha = document.getElementById('fecha_nacimiento').value.trim();
-    const preferencias = document.getElementById('preferencias').value.trim();
+    const preferencias = document.getElementById('preferenciasInput').value.trim();
     const ubicacion = document.getElementById('ubicacion').value.trim();
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
@@ -13,14 +15,14 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     const messageBox = document.getElementById('message');
     messageBox.className = 'message';
 
-    // Validar contraseñas
+    // Validación de contraseñas
     if (password !== confirmPassword) {
         messageBox.textContent = 'Las contraseñas no coinciden.';
         messageBox.classList.add('error');
         return;
     }
 
-    // Validar fecha de nacimiento no sea en el futuro
+    // Validación de fecha futura
     if (fecha) {
         const fechaNacimiento = new Date(fecha);
         const hoy = new Date();
@@ -31,6 +33,14 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         }
     }
 
+    // Validar que se haya seleccionado al menos una preferencia
+    if (!preferencias) {
+        messageBox.textContent = 'Selecciona al menos una preferencia.';
+        messageBox.classList.add('error');
+        return;
+    }
+
+    // Enviar datos al backend
     try {
         const response = await fetch('/api/registro/', {
             method: 'POST',
@@ -55,10 +65,15 @@ document.getElementById('registerForm').addEventListener('submit', async functio
 
         const data = await response.json();
 
+        // Si el registro fue exitoso
         if (data.success) {
             messageBox.textContent = data.mensaje;
             messageBox.classList.add('success');
             document.getElementById('registerForm').reset();
+
+            // Limpiar etiquetas seleccionadas visualmente
+            document.querySelectorAll('.chip.selected').forEach(c => c.classList.remove('selected'));
+            document.getElementById('preferenciasInput').value = '';
         } else {
             messageBox.textContent = data.mensaje || 'Error al registrar usuario.';
             messageBox.classList.add('error');
@@ -71,6 +86,42 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     }
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    const dropdown = document.getElementById('preferenciasDropdown');
+    const tagsContainer = document.getElementById('preferenciasTags');
+    const inputHidden = document.getElementById('preferenciasInput');
+    let selectedValues = [];
+
+    dropdown.addEventListener('change', function () {
+        const selected = dropdown.value;
+        if (selected && !selectedValues.includes(selected)) {
+            selectedValues.push(selected);
+            updateTags();
+        }
+        dropdown.value = ''; // Reinicia selección
+    });
+
+    function updateTags() {
+        tagsContainer.innerHTML = '';
+        selectedValues.forEach(value => {
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.innerHTML = `${value} <span class="remove-tag" data-value="${value}">&times;</span>`;
+            tagsContainer.appendChild(tag);
+        });
+        inputHidden.value = selectedValues.join(',');
+    }
+
+    tagsContainer.addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-tag')) {
+            const value = e.target.getAttribute('data-value');
+            selectedValues = selectedValues.filter(v => v !== value);
+            updateTags();
+        }
+    });
+});
+
+// Función para obtener el token CSRF desde las cookies
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

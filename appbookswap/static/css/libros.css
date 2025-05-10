@@ -1,41 +1,80 @@
 /* estilos para libros.html */
 #librosRow {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
 }
 
 .card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .card-img-top {
-    height: 250px;
-    object-fit: cover;
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
+  height: 250px;
+  object-fit: cover;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
 }
 
 .border-dashed {
-    border: 2px dashed #ccc;
+  border: 2px dashed #ccc;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  background-color: #f0f8ff;
+  color: #2c3e50;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #3498db;
+}
+
+.tag .remove-tag {
+  background-color: #3498db;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tag .remove-tag:hover {
+  background-color: #2a7fbf;
 }
 
 @media (max-width: 768px) {
-    .col-md-3 {
-        flex: 0 0 45%;
-        max-width: 45%;
-    }
+  .col-md-3 {
+    flex: 0 0 45%;
+    max-width: 45%;
+  }
 }
 
 @media (max-width: 576px) {
-    .col-md-3 {
-        flex: 0 0 90%;
-        max-width: 90%;
-    }
+  .col-md-3 {
+    flex: 0 0 90%;
+    max-width: 90%;
+  }
+}
+#detalleLibroModal img {
+  max-height: 300px;
+  object-fit: cover;
 }
