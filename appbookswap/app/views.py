@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth import get_user_model, authenticate, login as auth_login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import PasswordResetConfirmView
 from django.utils.decorators import method_decorator
 from django.template.loader import render_to_string
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
@@ -14,6 +15,7 @@ import datetime
 from .models import Usuario, Libro, ImagenLibro, Message
 from .serializers import UsuarioSerializer, LibroSerializer
 from .forms import MessageForm
+from django.contrib.auth.views import PasswordResetConfirmView
 
 User = get_user_model()
 
@@ -213,3 +215,13 @@ class LibroAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = LibroSerializer
     lookup_field = 'id_libro'
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+@method_decorator(csrf_protect, name='dispatch')
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'password_reset/confirm.html'
+    success_url = '/reset/done/'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.user  
+        return context

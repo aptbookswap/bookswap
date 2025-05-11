@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Restablecimiento de contraseña - BookSwap</title>
+    <style type="text/css">
+        /* Mantén tus estilos CSS aquí */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #00aeff;
+            color: rgb(0, 0, 0);
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Restablecer tu contraseña en BookSwap</h2>
+        <p>Hola,</p>
+        <p>Recibiste este correo porque solicitaste restablecer tu contraseña en BookSwap.</p>
+        
+        <p>Por favor, haz clic en el siguiente botón para continuar:</p>
+        
+        <p style="text-align: left; margin: 30px 0 30px 50px;">
+            <a href="{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}" 
+            class="button">
+                Restablecer Contraseña
+            </a>
+        </p>
+
+        
+        <p>Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
+        
+        <p>Atentamente,<br>El equipo de BookSwap</p>
+    </div>
+</body>
+</html>

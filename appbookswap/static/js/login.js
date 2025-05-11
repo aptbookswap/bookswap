@@ -1,11 +1,13 @@
-// Espera a que el DOM esté completamente cargado
 document.addEventListener('DOMContentLoaded', function () {
+    // Crear instancia global de modal
+    const loginModalElement = document.getElementById('loginModal');
+    const loginModalInstance = new bootstrap.Modal(loginModalElement);
+
     // Mostrar el modal de login cuando se hace clic en el botón
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
-            const modal = new bootstrap.Modal(document.getElementById('loginModal'));
-            modal.show();
+            loginModalInstance.show();
         });
     }
 
@@ -28,10 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         'X-CSRFToken': getCookie('csrftoken')
                     },
                     credentials: 'include',
-                    body: JSON.stringify({
-                        identificador,
-                        password
-                    })
+                    body: JSON.stringify({ identificador, password })
                 });
 
                 if (!response.ok) throw new Error('Respuesta inválida');
@@ -42,10 +41,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     messageBox.textContent = 'Inicio de sesión exitoso';
                     messageBox.classList.add('success');
 
-                    // Ocultar modal de login
-                    const modalElement = document.getElementById('loginModal');
-                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                    modalInstance.hide();
+                    // Ocultar modal de login desde la instancia global
+                    loginModalInstance.hide();
 
                     // Mostrar menú de usuario
                     document.getElementById('authButtons').classList.add('d-none');
@@ -88,6 +85,11 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('userMenu').classList.add('d-none');
         });
     }
+
+    // Limpiar cualquier backdrop residual cuando se cierra el modal
+    loginModalElement.addEventListener('hidden.bs.modal', () => {
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    });
 });
 
 // Obtiene un token CSRF desde las cookies

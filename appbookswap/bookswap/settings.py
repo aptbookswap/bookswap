@@ -51,9 +51,6 @@ LOGIN_URL = '/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
-
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -63,6 +60,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Configuración de cookies para desarrollo
+CSRF_COOKIE_SECURE = False  # True en producción
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = False  # True en producción
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']  
 
 ROOT_URLCONF = 'bookswap.urls'
 
@@ -121,7 +124,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-es'
 
 TIME_ZONE = 'UTC'
 
@@ -129,6 +132,15 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Configuración de Email 
+# --------------------------------------------------
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'aptbookswap@gmail.com'
+EMAIL_HOST_PASSWORD = 'iltb rqmb cqrx eizo'  #Contraseña de aplicación
+DEFAULT_FROM_EMAIL = 'aptbookswap@gmail.com'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/

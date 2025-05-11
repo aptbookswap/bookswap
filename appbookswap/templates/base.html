@@ -82,17 +82,19 @@
             <div class="modal-body">
                 <form id="loginForm">
                     <div class="mb-3">
-                        <label for="loginEmail" class="form-label">Correo o Usuario</label>
-                        <input type="text" class="form-control" id="loginEmail" required placeholder="correo o usuario">
-                        <div class="form-text">Puedes usar correo o nombre de usuario</div>
+                        <label for="loginEmail" class="form-label">Correo</label>
+                        <input type="text" class="form-control" id="loginEmail" required placeholder="correo">
                     </div>
                     <div class="mb-3">
                         <label for="loginPassword" class="form-label">Contraseña</label>
                         <input type="password" class="form-control" id="loginPassword" required placeholder="••••••••">
                     </div>
-                    <div class="d-grid mb-2">
+                    
+                    <div class="d-flex gap-2 mb-2">
                         <button type="submit" class="btn btn-primary">Ingresar</button>
+                        <a class="btn btn-danger" href="{% url 'password_reset' %}">Olvidé contraseña</a>
                     </div>
+
 
                     <!-- 🔗 Enlace a registro -->
                     <p class="text-center">
