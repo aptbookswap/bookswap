@@ -83,8 +83,10 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorage.removeItem('usuarioActivo');
             document.getElementById('authButtons').classList.remove('d-none');
             document.getElementById('userMenu').classList.add('d-none');
+            window.location.href = "/"; 
         });
     }
+
 
     // Limpiar cualquier backdrop residual cuando se cierra el modal
     loginModalElement.addEventListener('hidden.bs.modal', () => {

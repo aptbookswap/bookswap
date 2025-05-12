@@ -15,13 +15,7 @@ function getCookie(name) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Verifica si hay un usuario logueado
-    const usuario = JSON.parse(localStorage.getItem('usuarioActivo'));
-    if (!usuario || !usuario.uid) {
-        alert("Debes iniciar sesión para ver esta página.");
-        window.location.href = "/";
-        return;
-    }
+    
 
     // Referencias y variables
     const formFields = ['nombre', 'correo', 'numero', 'fecha_nacimiento', 'preferenciasInput', 'ubicacion', 'img_perfil'];

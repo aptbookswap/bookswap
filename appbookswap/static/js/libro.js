@@ -14,6 +14,16 @@ function getCookie(name) {
     return cookieValue;
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+    // Verifica si hay un usuario logueado
+    const usuario = JSON.parse(localStorage.getItem('usuarioActivo'));
+    if (!usuario || !usuario.uid) {
+        alert("Debes iniciar sesión para ver esta página.");
+        window.location.href = "/";
+        return;
+    }
+});
+
 // Variables globales
 let libroActivoId = null;
 let generosSeleccionados = [];
