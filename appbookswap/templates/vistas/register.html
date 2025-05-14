@@ -9,6 +9,8 @@
     <!-- Iconos y estilos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/register.css' %}">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
 </head>
 <body>
 
@@ -60,11 +62,6 @@
                 <input type="hidden" name="preferencias" id="preferenciasInput">
                 <small style="font-size: 0.75rem; color: #7f8c8d;">Puedes seleccionar más de una opción.</small>
             </div>
-
-            <div class="form-group">
-                <label for="ubicacion">Ubicación</label>
-                <input type="text" id="ubicacion" placeholder="Viña del Mar, Chile">
-            </div>
         </div>
 
         <div class="form-row">
@@ -76,6 +73,12 @@
                 <label for="confirmPassword">Confirmar Contraseña</label>
                 <input type="password" id="confirmPassword" required placeholder="••••••••">
             </div>
+        </div>
+
+        <div class="form-group">
+                <label>Ubicación</label>
+                <div id="map" style="width: 100%; height: 300px; margin: 10px 0; border: 1px solid #ddd;"></div>
+                <input type="text" id="ubicacion" placeholder="Coordenadas (se completan automáticamente)" readonly>
         </div>
 
         <button type="submit">Crear cuenta con correo</button>

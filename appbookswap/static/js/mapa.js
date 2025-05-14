@@ -28,9 +28,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let map = null;
     let geolocate = null;
     let userLocation = null;
-    let destinationMarker = null;
-    let routeLayerId = 'route';
-    let destinationPopup = null;
 
     // Función para inicializar el mapa
     function initMap() {
@@ -72,30 +69,20 @@ document.addEventListener('DOMContentLoaded', function () {
             geolocate.trigger();
         });
         
-        // Evento para agregar marcadores
+        // Evento para agregar marcadores y capturar coordenadas
         map.on('contextmenu', (e) => {
             e.preventDefault();
-            if (destinationMarker) {
-                destinationMarker.remove();
-                if (destinationPopup) {
-                    destinationPopup.remove();
-                    destinationPopup = null;
-                }
-            }
-            destinationMarker = new mapboxgl.Marker()
-                .setLngLat([e.lngLat.lng, e.lngLat.lat])
-                .addTo(map);
             
-            // Crear y mostrar el popup del destino
-            const message = 'Libro 123 - Luis Perez';
-            destinationPopup = new mapboxgl.Popup({ closeOnClick: true })
-                .setLngLat([e.lngLat.lng, e.lngLat.lat])
-                .setHTML(message)
-                .addTo(map);
+            // Coordenadas del punto donde hiciste clic derecho
+            const longitude = e.lngLat.lng;
+            const latitude = e.lngLat.lat;
             
-            if (userLocation) {
-                getDirections(userLocation, [e.lngLat.lng, e.lngLat.lat]);
-            }
+            // Mostrar en consola
+            console.log('Coordenadas capturadas:', {
+                longitude: longitude,
+                latitude: latitude
+            });
+            
         });
         
         // Añadir controles de navegación
