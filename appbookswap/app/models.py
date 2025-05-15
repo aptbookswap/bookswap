@@ -82,3 +82,28 @@ class ImagenLibro(models.Model):
 
     def __str__(self):
         return f'Imagen de {self.libro.titulo}'
+
+# Modelo tabla valoraciones Comprador
+class ValoracionAComprador(models.Model):
+    ofertador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='valoraciones_hechas_a_comprador')
+    comprador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='valoraciones_recibidas_como_comprador')
+    puntuacion = models.PositiveSmallIntegerField(choices=[(i, i) for i in range(1, 6)])
+    comentario = models.TextField(blank=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.ofertador.username} → {self.comprador.username} ({self.puntuacion} ⭐)'
+    
+
+# Modelo tabla valoraciones Ofertador
+class ValoracionAOfertador(models.Model):
+    comprador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='valoraciones_hechas')
+    ofertador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='valoraciones_recibidas_como_ofertador')
+    puntuacion = models.PositiveSmallIntegerField(choices=[(i, i) for i in range(1, 6)])
+    comentario = models.TextField(blank=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.comprador.username} → {self.ofertador.username} ({self.puntuacion} ⭐)'
+
+

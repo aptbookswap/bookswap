@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Usuario, Libro, ImagenLibro
+from .models import Usuario, Libro, ImagenLibro, ValoracionAOfertador, ValoracionAComprador
 
 class UsuarioSerializer(serializers.ModelSerializer):
     img_perfil = serializers.ImageField(use_url=True, required=False)
@@ -22,14 +22,14 @@ class UsuarioSerializer(serializers.ModelSerializer):
         }
 
 class ImagenLibroSerializer(serializers.ModelSerializer):
-    imagen = serializers.ImageField(use_url=True)  
+    imagen = serializers.ImageField(use_url=True)
 
     class Meta:
         model = ImagenLibro
         fields = ['imagen']
 
 class LibroSerializer(serializers.ModelSerializer):
-    imagenes = ImagenLibroSerializer(many=True, read_only=True)  
+    imagenes = ImagenLibroSerializer(many=True, read_only=True)
 
     class Meta:
         model = Libro
@@ -38,3 +38,17 @@ class LibroSerializer(serializers.ModelSerializer):
             'id_libro': {'read_only': True},
             'user': {'read_only': True}
         }
+
+
+# NUEVOS SERIALIZADORES PARA VALORACIONES
+class ValoracionAOfertadorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ValoracionAOfertador
+        fields = ['id', 'comprador', 'ofertador', 'puntuacion', 'comentario', 'fecha']
+        read_only_fields = ['id', 'fecha']
+
+class ValoracionACompradorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ValoracionAComprador
+        fields = ['id', 'ofertador', 'comprador', 'puntuacion', 'comentario', 'fecha']
+        read_only_fields = ['id', 'fecha']

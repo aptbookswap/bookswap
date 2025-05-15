@@ -9,13 +9,17 @@ from django.utils.decorators import method_decorator
 from django.template.loader import render_to_string
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+
 import json
 import datetime
 
-from .models import Usuario, Libro, ImagenLibro, Message
-from .serializers import UsuarioSerializer, LibroSerializer
+from .models import Usuario, Libro, ImagenLibro, Message, ValoracionAOfertador, ValoracionAComprador
+from .serializers import UsuarioSerializer, LibroSerializer, ValoracionAOfertadorSerializer, ValoracionACompradorSerializer
 from .forms import MessageForm
-from django.contrib.auth.views import PasswordResetConfirmView
 
 User = get_user_model()
 
@@ -225,3 +229,64 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
         context = super().get_context_data(**kwargs)
         context['user'] = self.user  
         return context
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def valorar_ofertador(request):
+    try:
+        ofertador_uid = request.data.get('ofertador')
+        ofertador = Usuario.objects.get(uid=ofertador_uid)
+    except Usuario.DoesNotExist:
+        return Response({'success': False, 'mensaje': 'Ofertador no encontrado'}, status=404)
+
+    data = {
+        'comprador': request.user.id,
+        'ofertador': ofertador.id,
+        'puntuacion': request.data.get('puntuacion'),
+        'comentario': request.data.get('comentario')
+    }
+
+    serializer = ValoracionAOfertadorSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+
+        # Actualizar promedio
+        valoraciones = ValoracionAOfertador.objects.filter(ofertador=ofertador)
+        promedio = valoraciones.aggregate(models.Avg('puntuacion'))['puntuacion__avg']
+        ofertador.valoracion_ofertador = round(promedio, 2)
+        ofertador.save()
+
+        return Response({'success': True, 'mensaje': 'Valoración al ofertador registrada'})
+    return Response({'success': False, 'errores': serializer.errors}, status=400)
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def valorar_comprador(request):
+    try:
+        comprador_uid = request.data.get('comprador')
+        comprador = Usuario.objects.get(uid=comprador_uid)
+    except Usuario.DoesNotExist:
+        return Response({'success': False, 'mensaje': 'Comprador no encontrado'}, status=404)
+
+    data = {
+        'ofertador': request.user.id,
+        'comprador': comprador.id,
+        'puntuacion': request.data.get('puntuacion'),
+        'comentario': request.data.get('comentario')
+    }
+
+    serializer = ValoracionACompradorSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+
+        # Actualizar promedio
+        valoraciones = ValoracionAComprador.objects.filter(comprador=comprador)
+        promedio = valoraciones.aggregate(models.Avg('puntuacion'))['puntuacion__avg']
+        comprador.valoracion_comprador = round(promedio, 2)
+        comprador.save()
+
+        return Response({'success': True, 'mensaje': 'Valoración al comprador registrada'})
+    return Response({'success': False, 'errores': serializer.errors}, status=400)
+
