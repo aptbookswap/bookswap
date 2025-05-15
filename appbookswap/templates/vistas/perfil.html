@@ -17,7 +17,20 @@
           {% for user in users %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
               {{ user.first_name }} ({{ user.email }})
-              <a href="{% url 'chat' uid=user.uid %}" class="btn btn-sm btn-outline-primary">Chatear</a>
+              <div class="d-flex gap-2">
+                <a href="{% url 'chat' uid=user.uid %}" class="btn btn-sm btn-outline-primary">Chatear</a>
+                <button class="btn btn-sm btn-outline-success valorar-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalValorarOfertador"
+                        data-user-uid="{{ user.uid }}"
+                        data-user-name="{{ user.first_name }}">Valorar 1</button>
+
+                <button class="btn btn-sm btn-outline-warning valorar-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalValorarComprador"
+                        data-user-uid="{{ user.uid }}"
+                        data-user-name="{{ user.first_name }}">Valorar 2</button>
+              </div>
             </li>
           {% empty %}
             <li class="list-group-item text-center">No hay otros usuarios disponibles</li>
@@ -128,8 +141,16 @@
     </div>
   </div>
 </div>
+
+
+{% include "vistas/partials/modal_valorar_ofertador.html" %}
+{% include "vistas/partials/modal_valorar_comprador.html" %}
+
+
+
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'js/perfil.js' %}"></script>
+<script src="{% static 'js/valoracion.js' %}"></script>
 {% endblock %}
