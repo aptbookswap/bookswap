@@ -55,6 +55,24 @@
             </div>
         </div>
     </div>
+    
+    <!-- Datos de todos los usuarios -->
+    <div id="usuarios-data" style="display: none;">
+        [
+        {% for usuario in usuarios_con_ubicacion %}
+            {
+                "username": "{{ usuario.first_name|default:usuario.username }}",
+                "coords": "{{ usuario.ubicacion }}"
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+        ]
+    </div>
+
+    <!-- Datos específicos del usuario actual -->
+    <div id="usuario-actual-data"
+         data-coords="{% if usuario_actual %}{{ usuario_actual.ubicacion }}{% endif %}"
+         style="display: none;">
+    </div>
 </section>
 
 <section id="como-funciona" class="bg-light py-5 mb-5">
@@ -92,4 +110,3 @@
 <script src="{% static 'js/mapa.js' %}"></script>
 <script src="{% static 'js/login.js' %}"></script>
 {% endblock %}
-

@@ -25,7 +25,20 @@ User = get_user_model()
 
 # Vistas HTML
 def index(request):
-    return render(request, 'vistas/index.html')
+    usuarios_con_ubicacion = Usuario.objects.exclude(ubicacion__isnull=True).exclude(ubicacion__exact='')
+    
+    # Identificar al usuario actual si está autenticado
+    usuario_actual = None
+    if request.user.is_authenticated:
+        usuario_actual = {
+            'username': request.user.first_name or request.user.username,
+            'coords': request.user.ubicacion
+        } if request.user.ubicacion else None
+    
+    return render(request, 'vistas/index.html', {
+        'usuarios_con_ubicacion': usuarios_con_ubicacion,
+        'usuario_actual': usuario_actual  # Enviamos solo el usuario activo
+    })
 
 def registro(request):
     return render(request, 'vistas/register.html')
@@ -253,7 +266,7 @@ def valorar_ofertador(request):
 
         # Actualizar promedio
         valoraciones = ValoracionAOfertador.objects.filter(ofertador=ofertador)
-        promedio = valoraciones.aggregate(models.Avg('puntuacion'))['puntuacion__avg']
+        promedio = valoraciones.aggregate(model.Avg('puntuacion'))['puntuacion__avg']
         ofertador.valoracion_ofertador = round(promedio, 2)
         ofertador.save()
 

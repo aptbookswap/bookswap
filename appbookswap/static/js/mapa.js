@@ -1,109 +1,122 @@
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Mostrar login modal desde botón en el mapa
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuración inicial del token (IMPORTANTE que vaya primero)
+    mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
+    
+    // Control de login (tu código existente)
     const mapLoginBtn = document.getElementById('mapLoginBtn');
     if (mapLoginBtn) {
-        mapLoginBtn.addEventListener('click', () => {
+        mapLoginBtn.addEventListener('click', function() {
             const modal = new bootstrap.Modal(document.getElementById('loginModal'));
             modal.show();
         });
     }
 
-    // Si hay sesión activa, mostrar mapa y ocultar overlay
+    // Verificar sesión y mostrar mapa
     const sessionData = localStorage.getItem('usuarioActivo');
     if (sessionData) {
-        const mapLoginOverlay = document.getElementById('mapLoginOverlay');
-        const realMap = document.getElementById('realMap');
-
-        mapLoginOverlay.style.display = 'none';
-        realMap.style.display = 'block';
-
-        // Esperar que se renderice antes de inicializar el mapa
-        setTimeout(() => {
-            initMap();
-        }, 100);
+        document.getElementById('mapLoginOverlay').style.display = 'none';
+        document.getElementById('realMap').style.display = 'block';
+        initMap();
     }
 
-    // Mapa con Mapbox
-    let map = null;
-    let geolocate = null;
-    let userLocation = null;
-
-    // Función para inicializar el mapa
+    // Función principal del mapa
     function initMap() {
-        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
+        // Obtener coordenadas del usuario actual
+        let centerCoords = [-71.542969, -33.015347]; // Default Chile
         
-        const defaultCoords = [-71.542969, -33.015347];
-
-        map = new mapboxgl.Map({
+        try {
+            const usuarioActualData = document.getElementById('usuario-actual-data').textContent.trim();
+            if (usuarioActualData) {
+                const usuarioActual = JSON.parse(usuarioActualData);
+                if (usuarioActual.coords) {
+                    const [lng, lat] = usuarioActual.coords.split(',').map(Number);
+                    if (!isNaN(lng) && !isNaN(lat)) {
+                        centerCoords = [lng, lat];
+                    }
+                }
+            }
+        } catch(e) {
+            console.warn('Error leyendo coordenadas usuario actual:', e);
+        }
+        
+        const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/outdoors-v12',
-            center: defaultCoords,
-            zoom: 5,
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: centerCoords,
+            zoom: 15,
             dragRotate: false,
             touchZoomRotate: false
         });
+
+        // Añadir controles al mapa
+        map.addControl(new mapboxgl.NavigationControl());
         
-        geolocate = new mapboxgl.GeolocateControl({
+        // Configurar geolocalización CON comportamiento controlado
+        const geolocate = new mapboxgl.GeolocateControl({
             positionOptions: {
-                enableHighAccuracy: false
+                enableHighAccuracy: true
             },
             trackUserLocation: false,
             showUserLocation: true,
-            showAccuracyCircle: false
+            showAccuracyCircle: false,
+            fitBoundsOptions: {
+                maxZoom: 10
+            }
         });
         map.addControl(geolocate);
-        
-        // Evento de geolocalización
-        geolocate.on('geolocate', (e) => {
-            userLocation = [e.coords.longitude, e.coords.latitude];
-            map.flyTo({
-                center: userLocation,
-                zoom: 13,
-                essential: true
-            });
-        });
-        
-        // Evento al cargar el mapa
-        map.on('load', () => {
-            geolocate.trigger();
-        });
-        
-        // Evento para agregar marcadores y capturar coordenadas
-        map.on('contextmenu', (e) => {
-            e.preventDefault();
-            
-            // Coordenadas del punto donde hiciste clic derecho
-            const longitude = e.lngLat.lng;
-            const latitude = e.lngLat.lat;
-            
-            // Mostrar en consola
-            console.log('Coordenadas capturadas:', {
-                longitude: longitude,
-                latitude: latitude
-            });
-            
-        });
-        
-        // Añadir controles de navegación
-        map.addControl(new mapboxgl.NavigationControl());
-    }
 
-    // Función para obtener direcciones
-    function getDirections(start, end) {
-        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}&language=es`;
-        
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                const route = data.routes[0];
-                drawRoute(route.geometry);
-            })
-            .catch(error => {
-                console.error('Error al obtener las indicaciones:', error);
-                removeRoute();
-            });
+        // Evento cuando el mapa se carga completamente
+        map.on('load', function() {
+            // 1. Primero cargar marcadores
+            loadUserMarkers(map);
+            
+            // 2. Luego manejar la geolocalización manualmente
+            setTimeout(() => {
+                geolocate.trigger();
+                
+                geolocate.on('geolocate', function(e) {
+                    map.flyTo({
+                        center: [e.coords.longitude, e.coords.latitude],
+                        zoom: 15,
+                        essential: true
+                    });
+                });
+            }, 1000);
+        });
+
+        // Función para cargar marcadores
+        function loadUserMarkers(map) {
+            try {
+                const usuariosData = JSON.parse(document.getElementById('usuarios-data').textContent || '[]');
+                
+                // Crear marcadores para todos los usuarios
+                usuariosData.forEach(function(usuario) {
+                    try {
+                        const [longitud, latitud] = usuario.coords.split(',').map(Number);
+                        if (isNaN(longitud) || isNaN(latitud)) return;
+
+                        const markerElement = document.createElement('div');
+                        markerElement.className = 'user-marker';
+                        markerElement.innerHTML = '<i class="fas fa-user"></i>';
+                        
+                        new mapboxgl.Marker(markerElement)
+                            .setLngLat([longitud, latitud])
+                            .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                                <div style="padding:10px;min-width:200px;">
+                                    <h6>${usuario.username}</h6>
+                                    <a href="/perfil/${usuario.username}" class="btn btn-sm btn-primary">
+                                        Ver perfil
+                                    </a>
+                                </div>
+                            `))
+                            .addTo(map);
+                    } catch (error) {
+                        console.error('Error al crear marcador:', error);
+                    }
+                });
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+            }
+        }
     }
-    
-    
 });
