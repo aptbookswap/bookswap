@@ -61,6 +61,7 @@
         [
         {% for usuario in usuarios_con_ubicacion %}
             {
+                "id": {{ usuario.id }},
                 "username": "{{ usuario.first_name|default:usuario.username }}",
                 "coords": "{{ usuario.ubicacion }}"
             }{% if not forloop.last %},{% endif %}

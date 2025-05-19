@@ -163,6 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function loadUserMarkers(map) {
             try {
                 const usuariosData = JSON.parse(document.getElementById('usuarios-data').textContent || '[]');
+                const currentCoords = coordsStr.replace(/\s/g, ''); // Elimina espacios para comparar
                 
                 usuariosData.forEach(function(usuario) {
                     try {
@@ -172,9 +173,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         const markerElement = document.createElement('div');
                         markerElement.className = 'user-marker-container';
                         
-                        // Verificar si es el usuario actual para mostrar "Tú"
-                        const displayName = (usuario.username === currentUsername) ? 'Tú' : usuario.username;
-                        const isCurrentUser = usuario.username === currentUsername;
+                        // Compara nombre Y coordenadas
+                        const usuarioCoords = usuario.coords.replace(/\s/g, '');
+                        const isCurrentUser = usuario.username === currentUsername && 
+                                            usuarioCoords === currentCoords;
+                        
+                        const displayName = isCurrentUser ? 'Tú' : usuario.username;
                         
                         markerElement.innerHTML = `
                             <div class="user-marker-content ${isCurrentUser ? 'current-user' : ''}">
