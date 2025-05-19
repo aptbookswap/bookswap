@@ -1,3 +1,4 @@
+/* ESTILOS GENERALES Y HERO SECTION  */
 .hero-section {
     background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
                 url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
@@ -20,6 +21,7 @@
     margin-bottom: 20px;
 }
 
+/* CONTENEDOR DEL MAPA*/
 .map-container {
     height: 500px;
     background-color: #f8f9fa;
@@ -48,14 +50,71 @@
     padding: 30px;
 }
 
+.login-required {
+    background-color: rgba(0,0,0,0.7);
+}
+
+.user-marker-content {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: white;
+    padding: 3px 8px 3px 5px;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border: 1px solid #ddd;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.user-marker-icon {
+    color: #0d6efd; /* Azul Bootstrap para coincidir con tu diseño */
+    font-size: 14px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-marker-name {
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+    white-space: nowrap;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ESTILOS PARA POPUPS DEL MAPA */
+.mapboxgl-popup-content {
+    padding: 0;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    border: 1px solid #dee2e6;
+}
+
+.map-popup-content {
+    padding: 12px;
+    min-width: 200px;
+}
+
+.map-popup-content h6 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #212529;
+}
+
+.map-popup-content .btn {
+    width: 100%;
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
 .feature-icon {
     font-size: 2.5rem;
     margin-bottom: 1rem;
     color: #0d6efd;
-}
-
-.login-required {
-    background-color: rgba(0,0,0,0.7);
 }
 
 .user-avatar {
@@ -78,6 +137,21 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
+/* EFECTO PARA MARCADOR ACTIVO */
+.user-marker-container.active {
+    transform: scale(1.2);
+    z-index: 100;
+}
+
+.user-marker-container.active .user-marker-content {
+    background-color: #0d6efd; /* Azul Bootstrap */
+}
+
+.user-marker-container.active .user-marker-icon,
+.user-marker-container.active .user-marker-name {
+    color: white;
+}
+
 /* 📱 RESPONSIVE */
 @media (max-width: 768px) {
     .hero-section {
@@ -95,6 +169,12 @@
     .map-content {
         padding: 20px;
     }
+    
+    /* Ajustes para marcadores en móviles */
+    .user-marker-name {
+        max-width: 70px;
+        font-size: 11px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -109,5 +189,13 @@
     }
     .map-container {
         height: 300px;
+    }
+    
+    /* Ajustes adicionales para móviles pequeños */
+    .user-marker-content {
+        padding: 2px 5px 2px 3px;
+    }
+    .user-marker-name {
+        max-width: 50px;
     }
 }

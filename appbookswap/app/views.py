@@ -25,19 +25,27 @@ User = get_user_model()
 
 # Vistas HTML
 def index(request):
+    # Obtener usuarios con ubicación válida (que no sea None ni string vacío)
     usuarios_con_ubicacion = Usuario.objects.exclude(ubicacion__isnull=True).exclude(ubicacion__exact='')
     
-    # Identificar al usuario actual si está autenticado
+    # Preparar datos del usuario actual
     usuario_actual = None
     if request.user.is_authenticated:
-        usuario_actual = {
-            'username': request.user.first_name or request.user.username,
-            'coords': request.user.ubicacion
-        } if request.user.ubicacion else None
+        # Verificar que la ubicación existe y tiene formato correcto
+        if request.user.ubicacion and ',' in request.user.ubicacion:
+            try:
+                lng, lat = map(float, request.user.ubicacion.split(','))
+                usuario_actual = {
+                    'username': request.user.first_name or request.user.username,
+                    'ubicacion': request.user.ubicacion  # Mantenemos el formato "lng,lat"
+                }
+            except (ValueError, AttributeError):
+                # Si las coordenadas no son números válidos
+                pass
     
     return render(request, 'vistas/index.html', {
         'usuarios_con_ubicacion': usuarios_con_ubicacion,
-        'usuario_actual': usuario_actual  # Enviamos solo el usuario activo
+        'usuario_actual': usuario_actual
     })
 
 def registro(request):

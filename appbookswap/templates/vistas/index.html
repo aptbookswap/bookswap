@@ -70,8 +70,9 @@
 
     <!-- Datos específicos del usuario actual -->
     <div id="usuario-actual-data"
-         data-coords="{% if usuario_actual %}{{ usuario_actual.ubicacion }}{% endif %}"
-         style="display: none;">
+        data-coords="{% if usuario_actual and usuario_actual.ubicacion %}{{ usuario_actual.ubicacion }}{% endif %}"
+        data-username="{% if usuario_actual %}{{ usuario_actual.username }}{% endif %}"
+        style="display: none;">
     </div>
 </section>
 
