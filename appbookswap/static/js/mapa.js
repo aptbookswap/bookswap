@@ -1,109 +1,212 @@
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Mostrar login modal desde botón en el mapa
-    const mapLoginBtn = document.getElementById('mapLoginBtn');
-    if (mapLoginBtn) {
-        mapLoginBtn.addEventListener('click', () => {
-            const modal = new bootstrap.Modal(document.getElementById('loginModal'));
-            modal.show();
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuración inicial
+    mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
+    
+    // Verificar sesión
+    if (localStorage.getItem('usuarioActivo')) {
+        document.getElementById('mapLoginOverlay').style.display = 'none';
+        document.getElementById('realMap').style.display = 'block';
+        initMap();
     }
 
-    // Si hay sesión activa, mostrar mapa y ocultar overlay
-    const sessionData = localStorage.getItem('usuarioActivo');
-    if (sessionData) {
-        const mapLoginOverlay = document.getElementById('mapLoginOverlay');
-        const realMap = document.getElementById('realMap');
-
-        mapLoginOverlay.style.display = 'none';
-        realMap.style.display = 'block';
-
-        // Esperar que se renderice antes de inicializar el mapa
-        setTimeout(() => {
-            initMap();
-        }, 100);
-    }
-
-    // Mapa con Mapbox
-    let map = null;
-    let geolocate = null;
-    let userLocation = null;
-
-    // Función para inicializar el mapa
-    function initMap() {
-        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
+    function initMap() {        
+        // 1. Obtener datos del usuario actual
+        const coordElement = document.getElementById('usuario-actual-data');        
+        const coordsStr = coordElement ? coordElement.getAttribute('data-coords') : null;
+        const currentUsername = coordElement ? coordElement.getAttribute('data-username') : null;
         
-        const defaultCoords = [-71.542969, -33.015347];
-
-        map = new mapboxgl.Map({
+        let centerCoords = null;
+        let hasStoredLocation = false;
+        
+        if (coordsStr && coordsStr.trim() !== '') {            
+            const parts = coordsStr.split(',');            
+            if (parts.length === 2) {
+                const lng = parseFloat(parts[0]);
+                const lat = parseFloat(parts[1]);                
+                if (!isNaN(lng) && !isNaN(lat)) {
+                    centerCoords = [lng, lat];
+                    hasStoredLocation = true;
+                } 
+            } 
+        }
+        
+        // 2. Validar coordenadas
+        if (!centerCoords) {
+            document.getElementById('realMap').innerHTML = `
+                <div class="alert alert-warning">
+                    No se pudo cargar la ubicación. Valor recibido: "${coordsStr || 'vacío'}"
+                </div>
+            `;
+            return;
+        }
+        
+        // 3. Crear mapa
+        const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/outdoors-v12',
-            center: defaultCoords,
-            zoom: 5,
-            dragRotate: false,
-            touchZoomRotate: false
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: centerCoords,
+            zoom: 15
         });
-        
-        geolocate = new mapboxgl.GeolocateControl({
-            positionOptions: {
-                enableHighAccuracy: false
-            },
-            trackUserLocation: false,
-            showUserLocation: true,
-            showAccuracyCircle: false
-        });
-        map.addControl(geolocate);
-        
-        // Evento de geolocalización
-        geolocate.on('geolocate', (e) => {
-            userLocation = [e.coords.longitude, e.coords.latitude];
+
+        // 4. Variables para controlar el GPS
+        let watchingPosition = false;
+        let currentPosition = null;
+        let userMarker = null;
+
+        // 5. Función para actualizar la posición del usuario
+        function updateUserPosition(position) {
+            currentPosition = position;
+            
+            // Crear o actualizar el marcador del usuario
+            if (!userMarker) {
+                // Crear elemento personalizado para el punto azul
+                const el = document.createElement('div');
+                el.className = 'user-location-marker';
+                el.innerHTML = '<div class="user-location-dot"></div>';
+                
+                userMarker = new mapboxgl.Marker(el)
+                    .setLngLat([position.coords.longitude, position.coords.latitude])
+                    .addTo(map);
+            } else {
+                userMarker.setLngLat([position.coords.longitude, position.coords.latitude]);
+            }
+            
+            // Mover el mapa manteniendo el zoom
             map.flyTo({
-                center: userLocation,
-                zoom: 13,
-                essential: true
+                center: [position.coords.longitude, position.coords.latitude],
+                zoom: 15,
+                essential: true,
+                speed: 0.8
             });
-        });
-        
-        // Evento al cargar el mapa
-        map.on('load', () => {
+        }
+
+        // 6. Configurar geolocalización
+        const geolocate = {
+            activate: function() {
+                if (watchingPosition) {
+                    navigator.geolocation.clearWatch(this.watchId);
+                    watchingPosition = false;
+                    if (userMarker) userMarker.remove();
+                    userMarker = null;
+                    return;
+                }
+                
+                this.watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        updateUserPosition(position);
+                    },
+                    (error) => {
+                        console.error('Error de geolocalización:', error);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 0,
+                        timeout: 5000
+                    }
+                );
+                watchingPosition = true;
+            },
+            
+            trigger: function() {
+                if (!currentPosition) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            updateUserPosition(position);
+                        },
+                        (error) => {
+                            console.error('Error de geolocalización:', error);
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            maximumAge: 0,
+                            timeout: 5000
+                        }
+                    );
+                } else {
+                    updateUserPosition(currentPosition);
+                }
+            }
+        };
+
+        // 7. Botón personalizado para geolocalización
+        const geoButton = document.createElement('button');
+        geoButton.className = 'mapboxgl-ctrl-geolocate';
+        geoButton.innerHTML = '<i class="fas fa-location-arrow"></i>';
+        geoButton.title = 'Centrar en mi ubicación actual';
+        geoButton.addEventListener('click', function() {
             geolocate.trigger();
         });
-        
-        // Evento para agregar marcadores y capturar coordenadas
-        map.on('contextmenu', (e) => {
-            e.preventDefault();
-            
-            // Coordenadas del punto donde hiciste clic derecho
-            const longitude = e.lngLat.lng;
-            const latitude = e.lngLat.lat;
-            
-            // Mostrar en consola
-            console.log('Coordenadas capturadas:', {
-                longitude: longitude,
-                latitude: latitude
-            });
-            
-        });
-        
-        // Añadir controles de navegación
-        map.addControl(new mapboxgl.NavigationControl());
-    }
 
-    // Función para obtener direcciones
-    function getDirections(start, end) {
-        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}&language=es`;
-        
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                const route = data.routes[0];
-                drawRoute(route.geometry);
-            })
-            .catch(error => {
-                console.error('Error al obtener las indicaciones:', error);
-                removeRoute();
-            });
+        // 8. Añadir controles al mapa
+        map.addControl(new mapboxgl.NavigationControl());
+        map.addControl({
+            onAdd: function() {
+                const container = document.createElement('div');
+                container.className = 'mapboxgl-ctrl-group mapboxgl-ctrl';
+                container.appendChild(geoButton);
+                return container;
+            },
+            onRemove: function() {}
+        }, 'top-right');
+
+        // 9. Cargar marcadores
+        map.on('load', function() {
+            loadUserMarkers(map);
+            
+            if (!hasStoredLocation) {
+                setTimeout(() => {
+                    geolocate.trigger();
+                }, 1000);
+            }
+        });
+
+        function loadUserMarkers(map) {
+            try {
+                const usuariosData = JSON.parse(document.getElementById('usuarios-data').textContent || '[]');
+                const currentCoords = coordsStr.replace(/\s/g, ''); // Elimina espacios para comparar
+                
+                usuariosData.forEach(function(usuario) {
+                    try {
+                        const [longitud, latitud] = usuario.coords.split(',').map(Number);
+                        if (isNaN(longitud) || isNaN(latitud)) return;
+
+                        const markerElement = document.createElement('div');
+                        markerElement.className = 'user-marker-container';
+                        
+                        // Compara nombre Y coordenadas
+                        const usuarioCoords = usuario.coords.replace(/\s/g, '');
+                        const isCurrentUser = usuario.username === currentUsername && 
+                                            usuarioCoords === currentCoords;
+                        
+                        const displayName = isCurrentUser ? 'Tú' : usuario.username;
+                        
+                        markerElement.innerHTML = `
+                            <div class="user-marker-content ${isCurrentUser ? 'current-user' : ''}">
+                                <div class="user-marker-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="user-marker-name">${displayName}</div>
+                            </div>
+                        `;
+
+                        new mapboxgl.Marker(markerElement)
+                            .setLngLat([longitud, latitud])
+                            .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                                <div class="map-popup-content">
+                                    <h6>${displayName}</h6>
+                                    <a href="/perfil/${usuario.username}" class="btn btn-sm btn-primary">
+                                        Ver perfil
+                                    </a>
+                                </div>
+                            `))
+                            .addTo(map);
+                    } catch (error) {
+                        console.error('Error al crear marcador:', error);
+                    }
+                });
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+            }
+        }
     }
-    
-    
 });
