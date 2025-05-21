@@ -78,7 +78,7 @@ def api_registro(request):
         return JsonResponse({'success': False, 'mensaje': 'Error interno'}, status=500)
 
 # Login de usuario (API)
-@csrf_exempt
+
 def login_usuario(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'mensaje': 'Método no permitido'}, status=405)
@@ -169,7 +169,7 @@ def libros_view(request):
     return render(request, 'vistas/libros.html', {'libros': libros})
 
 # Crear libro (formulario)
-@csrf_exempt
+
 @login_required
 def crear_libro(request):
     if request.method == 'POST':
@@ -230,7 +230,7 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
         context['user'] = self.user  
         return context
 
-@csrf_exempt
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def valorar_ofertador(request):
@@ -241,8 +241,8 @@ def valorar_ofertador(request):
         return Response({'success': False, 'mensaje': 'Ofertador no encontrado'}, status=404)
 
     data = {
-        'comprador': request.user.id,
-        'ofertador': ofertador.id,
+        'comprador': request.user.uid, 
+        'ofertador': ofertador.uid,
         'puntuacion': request.data.get('puntuacion'),
         'comentario': request.data.get('comentario')
     }
@@ -250,17 +250,11 @@ def valorar_ofertador(request):
     serializer = ValoracionAOfertadorSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
-
-        # Actualizar promedio
-        valoraciones = ValoracionAOfertador.objects.filter(ofertador=ofertador)
-        promedio = valoraciones.aggregate(models.Avg('puntuacion'))['puntuacion__avg']
-        ofertador.valoracion_ofertador = round(promedio, 2)
-        ofertador.save()
-
         return Response({'success': True, 'mensaje': 'Valoración al ofertador registrada'})
     return Response({'success': False, 'errores': serializer.errors}, status=400)
 
-@csrf_exempt
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def valorar_comprador(request):
@@ -271,8 +265,8 @@ def valorar_comprador(request):
         return Response({'success': False, 'mensaje': 'Comprador no encontrado'}, status=404)
 
     data = {
-        'ofertador': request.user.id,
-        'comprador': comprador.id,
+        'ofertador': request.user.uid,
+        'comprador': comprador.uid,
         'puntuacion': request.data.get('puntuacion'),
         'comentario': request.data.get('comentario')
     }
@@ -280,13 +274,7 @@ def valorar_comprador(request):
     serializer = ValoracionACompradorSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
-
-        # Actualizar promedio
-        valoraciones = ValoracionAComprador.objects.filter(comprador=comprador)
-        promedio = valoraciones.aggregate(models.Avg('puntuacion'))['puntuacion__avg']
-        comprador.valoracion_comprador = round(promedio, 2)
-        comprador.save()
-
         return Response({'success': True, 'mensaje': 'Valoración al comprador registrada'})
     return Response({'success': False, 'errores': serializer.errors}, status=400)
+
 

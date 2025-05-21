@@ -1,9 +1,31 @@
+// Función robusta para obtener el token CSRF desde cookies o <meta>
+function getCSRFToken() {
+    // 1. Buscar en cookies
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let c of cookies) {
+            const cookie = c.trim();
+            if (cookie.startsWith('csrftoken=')) {
+                return decodeURIComponent(cookie.substring('csrftoken='.length));
+            }
+        }
+    }
+
+    // 2. Buscar en el <meta name="csrf-token"> como fallback
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) {
+        return meta.getAttribute('content');
+    }
+
+    return null;
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // Crear instancia global de modal
     const loginModalElement = document.getElementById('loginModal');
     const loginModalInstance = new bootstrap.Modal(loginModalElement);
 
-    // Mostrar el modal de login cuando se hace clic en el botón
+    // Mostrar modal al hacer clic en botón
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
@@ -27,9 +49,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
+                        'X-CSRFToken': getCSRFToken() // ✅ token robusto
                     },
-                    credentials: 'include',
+                    credentials: 'include', // ✅ para que Django reciba y devuelva cookies
                     body: JSON.stringify({ identificador, password })
                 });
 
@@ -41,18 +63,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     messageBox.textContent = 'Inicio de sesión exitoso';
                     messageBox.classList.add('success');
 
-                    // Ocultar modal de login desde la instancia global
                     loginModalInstance.hide();
 
-                    // Mostrar menú de usuario
                     document.getElementById('authButtons').classList.add('d-none');
                     document.getElementById('userMenu').classList.remove('d-none');
                     document.getElementById('userEmailDisplay').textContent = data.nombre;
 
-                    // Guardar datos en localStorage
                     localStorage.setItem('usuarioActivo', JSON.stringify(data));
 
-                    // Recargar la página para aplicar sesión
                     window.location.reload();
                 } else {
                     messageBox.textContent = data.mensaje || 'Credenciales incorrectas.';
@@ -67,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Si hay sesión en localStorage, mostrar datos del usuario
+    // Cargar sesión guardada si existe
     const sessionData = localStorage.getItem('usuarioActivo');
     if (sessionData) {
         const data = JSON.parse(sessionData);
@@ -76,36 +94,19 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('userEmailDisplay').textContent = data.nombre;
     }
 
-    // Manejar cierre de sesión (logout)
+    // Cierre de sesión
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('usuarioActivo');
             document.getElementById('authButtons').classList.remove('d-none');
             document.getElementById('userMenu').classList.add('d-none');
-            window.location.href = "/"; 
+            window.location.href = "/";
         });
     }
 
-
-    // Limpiar cualquier backdrop residual cuando se cierra el modal
+    // Limpiar backdrop residual al cerrar modal
     loginModalElement.addEventListener('hidden.bs.modal', () => {
         document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
     });
 });
-
-// Obtiene un token CSRF desde las cookies
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let c of cookies) {
-            const cookie = c.trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Plataforma de intercambio de libros BookSwap">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}BookSwap{% endblock %}</title>
 
     <!-- Bootstrap CSS -->
@@ -25,7 +26,6 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
-
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
         <div class="container">

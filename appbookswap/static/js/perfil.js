@@ -1,16 +1,21 @@
-function getCookie(name) {
-    let cookieValue = null;
+// Función robusta para obtener el token CSRF
+function getCSRFToken() {
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
         for (let c of cookies) {
             const cookie = c.trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+            if (cookie.startsWith('csrftoken=')) {
+                return decodeURIComponent(cookie.substring('csrftoken='.length));
             }
         }
     }
-    return cookieValue;
+
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) {
+        return meta.getAttribute('content');
+    }
+
+    return null;
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -19,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
         alert("No hay sesión activa");
         return;
     }
+
     const usuario = JSON.parse(sessionData);
 
     const formFields = ['nombre', 'correo', 'numero', 'fecha_nacimiento', 'preferenciasInput', 'ubicacion'];
@@ -29,7 +35,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedValues = [];
     let isEditable = false;
 
-    fetch(`/api/perfil/${usuario.uid}/`)
+    fetch(`/api/perfil/${usuario.uid}/`, {
+        credentials: 'include'
+    })
         .then(res => res.json())
         .then(data => {
             document.getElementById('nombre').value = data.first_name || '';
@@ -142,8 +150,9 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`/api/perfil/${usuario.uid}/`, {
             method: 'PUT',
             headers: {
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCSRFToken()
             },
+            credentials: 'include',
             body: formData
         })
             .then(res => {
@@ -164,8 +173,9 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`/api/perfil/${usuario.uid}/`, {
             method: 'DELETE',
             headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
+                'X-CSRFToken': getCSRFToken()
+            },
+            credentials: 'include'
         })
             .then(res => {
                 if (res.ok) {
