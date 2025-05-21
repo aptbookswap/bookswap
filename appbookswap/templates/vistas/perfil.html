@@ -50,33 +50,33 @@
         </div>
 
         <div class="text-center mb-4">
-          <img src="{{ user.img_perfil.url }}" alt="Perfil" class="user-avatar" id="imgPerfilPreview">
-          <input type="file" id="imgPerfilInput" accept="image/*" class="form-control d-none" disabled>
+          <img src="" alt="Perfil" class="user-avatar" id="imgPerfilPreview">
+          <input type="file" id="imgPerfilInput" accept="image/*" class="form-control d-none editable" disabled>
           <br>
-          <button id="changeImgBtn" class="btn btn-outline-secondary btn-sm mt-2" disabled>Cambiar imagen</button>
+          <button id="changeImgBtn" class="btn btn-outline-secondary btn-sm mt-2 editable" disabled>Cambiar imagen</button>
         </div>
 
         <form id="perfilForm">
           <div class="row g-3">
             <div class="col-md-6">
               <label for="nombre" class="form-label">Nombre</label>
-              <input type="text" class="form-control" id="nombre" value="{{ user.first_name }}" disabled>
+              <input type="text" class="form-control editable" id="nombre" disabled>
             </div>
             <div class="col-md-6">
               <label for="correo" class="form-label">Correo electrónico</label>
-              <input type="email" class="form-control" id="correo" value="{{ user.email }}" disabled>
+              <input type="email" class="form-control editable" id="correo" disabled>
             </div>
             <div class="col-md-6">
               <label for="numero" class="form-label">Número</label>
-              <input type="text" class="form-control" id="numero" value="{{ user.numero }}" disabled>
+              <input type="text" class="form-control editable" id="numero" disabled>
             </div>
             <div class="col-md-6">
               <label for="fecha_nacimiento" class="form-label">Año de nacimiento</label>
-              <input type="date" class="form-control" id="fecha_nacimiento" value="{{ user.fecha_nacimiento }}" disabled>
+              <input type="date" class="form-control editable" id="fecha_nacimiento" disabled>
             </div>
             <div class="col-md-6">
               <label class="form-label">Preferencias</label>
-              <select id="preferenciasDropdown" class="form-control" style="display: none;">
+              <select id="preferenciasDropdown" class="form-control editable" style="display: none;" disabled>
                 <option value="" hidden>Selecciona una preferencia</option>
                 <option value="Fantasía">Fantasía</option>
                 <option value="Misterio">Misterio</option>
@@ -88,11 +88,11 @@
               </select>
               <div id="preferenciasTags" class="tags-container mt-2"></div>
               <div id="preferenciasReadOnly" class="mt-2 text-muted"></div>
-              <input type="hidden" id="preferenciasInput" name="preferencias" value="{{ user.preferencias }}">
+              <input type="hidden" id="preferenciasInput" class="editable" name="preferencias">
             </div>
             <div class="col-md-6">
               <label for="ubicacion" class="form-label">Ubicación</label>
-              <input type="text" class="form-control" id="ubicacion" value="{{ user.ubicacion }}" disabled>
+              <input type="text" class="form-control editable" id="ubicacion" disabled>
             </div>
           </div>
 
@@ -106,6 +106,7 @@
   </div>
 </div>
 
+<!-- Modales -->
 <div class="modal fade" id="confirmarModificarModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -113,9 +114,7 @@
         <h5 class="modal-title">Confirmar cambios</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        ¿Estás seguro de que deseas guardar los cambios en tu perfil?
-      </div>
+      <div class="modal-body">¿Estás seguro de que deseas guardar los cambios en tu perfil?</div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-warning" id="guardarCambiosBtn">Guardar cambios</button>
@@ -131,9 +130,7 @@
         <h5 class="modal-title">Eliminar cuenta</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        Esta acción eliminará tu cuenta permanentemente. ¿Deseas continuar?
-      </div>
+      <div class="modal-body">Esta acción eliminará tu cuenta permanentemente. ¿Deseas continuar?</div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-danger" id="eliminarCuentaBtn">Eliminar</button>
@@ -142,12 +139,8 @@
   </div>
 </div>
 
-
 {% include "vistas/partials/modal_valorar_ofertador.html" %}
 {% include "vistas/partials/modal_valorar_comprador.html" %}
-
-
-
 {% endblock %}
 
 {% block scripts %}

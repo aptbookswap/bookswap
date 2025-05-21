@@ -1,4 +1,3 @@
-// Función para obtener el token CSRF desde las cookies
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -15,10 +14,14 @@ function getCookie(name) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    
+    const sessionData = localStorage.getItem('usuarioActivo');
+    if (!sessionData) {
+        alert("No hay sesión activa");
+        return;
+    }
+    const usuario = JSON.parse(sessionData);
 
-    // Referencias y variables
-    const formFields = ['nombre', 'correo', 'numero', 'fecha_nacimiento', 'preferenciasInput', 'ubicacion', 'img_perfil'];
+    const formFields = ['nombre', 'correo', 'numero', 'fecha_nacimiento', 'preferenciasInput', 'ubicacion'];
     const dropdown = document.getElementById('preferenciasDropdown');
     const tagsContainer = document.getElementById('preferenciasTags');
     const inputHidden = document.getElementById('preferenciasInput');
@@ -26,7 +29,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedValues = [];
     let isEditable = false;
 
-    // Cargar datos del usuario desde la API
     fetch(`/api/perfil/${usuario.uid}/`)
         .then(res => res.json())
         .then(data => {
@@ -48,9 +50,9 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(err => {
             console.error("Error cargando perfil:", err);
+            alert("Error cargando perfil");
         });
 
-    // Manejo de imagen de perfil
     const imgBtn = document.getElementById('changeImgBtn');
     const imgInput = document.getElementById('imgPerfilInput');
     const imgPreview = document.getElementById('imgPerfilPreview');
@@ -66,19 +68,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Cambiar entre vista de solo lectura y modo edición
     const toggleEdit = document.getElementById('toggleEdit');
     if (toggleEdit) {
         toggleEdit.addEventListener('change', function () {
             isEditable = this.checked;
-            const inputs = document.querySelectorAll('#perfilForm input, #perfilForm select, #changeImgBtn, #imgPerfilInput');
-            inputs.forEach(el => el.disabled = !isEditable);
+            document.querySelectorAll('.editable').forEach(el => el.disabled = !isEditable);
             dropdown.style.display = isEditable ? 'block' : 'none';
             updateTags();
         });
     }
 
-    // Agregar género seleccionado
     dropdown.addEventListener('change', function () {
         const selected = dropdown.value;
         if (selected && !selectedValues.includes(selected)) {
@@ -88,7 +87,6 @@ document.addEventListener('DOMContentLoaded', function () {
         dropdown.value = '';
     });
 
-    // Eliminar un género de los tags
     tagsContainer.addEventListener('click', function (e) {
         if (!isEditable) return;
         if (e.target.classList.contains('remove-tag')) {
@@ -98,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Actualizar visualización de preferencias (tags o texto)
     function updateTags() {
         tagsContainer.innerHTML = '';
         if (!isEditable) {
@@ -116,7 +113,6 @@ document.addEventListener('DOMContentLoaded', function () {
         inputHidden.value = selectedValues.join(',');
     }
 
-    // Guardar cambios del formulario
     const guardarBtn = document.getElementById('guardarCambiosBtn');
     guardarBtn.addEventListener('click', () => {
         inputHidden.value = selectedValues.join(',');
@@ -161,7 +157,6 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(err => console.error("Error al modificar perfil:", err));
     });
 
-    // Eliminar cuenta del usuario
     const eliminarBtn = document.getElementById('eliminarCuentaBtn');
     eliminarBtn.addEventListener('click', () => {
         if (!confirm("¿Seguro que deseas eliminar tu cuenta?")) return;
