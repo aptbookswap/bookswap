@@ -1,20 +1,29 @@
-// Función para obtener CSRF desde cookies
-function getCookie(name) {
-    let cookieValue = null;
+// Función robusta para obtener el CSRF token
+function getCSRFToken() {
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
         for (let c of cookies) {
             const cookie = c.trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+            if (cookie.startsWith('csrftoken=')) {
+                return decodeURIComponent(cookie.substring('csrftoken='.length));
             }
         }
     }
-    return cookieValue;
+
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) {
+        return meta.getAttribute('content');
+    }
+
+    return null;
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    const usuarioActivo = JSON.parse(localStorage.getItem('usuarioActivo'));
+    if (!usuarioActivo) {
+        console.error("No se encontró usuario activo en localStorage.");
+        return;
+    }
 
     // === MODAL: Valorar al Ofertador ===
     const modalOfertador = document.getElementById('modalValorarOfertador');
@@ -33,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('formValorarOfertador')?.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        const uid = document.getElementById('ofertadorId').value;
+        const ofertadorUid = document.getElementById('ofertadorId').value;
         const rating = document.querySelector('#formValorarOfertador input[name="rating"]:checked')?.value;
         const comentario = document.getElementById('comentario_ofertador').value;
 
@@ -46,10 +55,12 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCSRFToken()
             },
+            credentials: 'include',
             body: JSON.stringify({
-                ofertador: uid,
+                ofertador: ofertadorUid,
+                comprador: usuarioActivo.uid,
                 puntuacion: rating,
                 comentario: comentario
             })
@@ -70,7 +81,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-
     // === MODAL: Valorar al Comprador ===
     const modalComprador = document.getElementById('modalValorarComprador');
     modalComprador?.addEventListener('show.bs.modal', event => {
@@ -88,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('formValorarComprador')?.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        const uid = document.getElementById('compradorId').value;
+        const compradorUid = document.getElementById('compradorId').value;
         const rating = document.querySelector('#formValorarComprador input[name="rating"]:checked')?.value;
         const comentario = document.getElementById('comentario_comprador').value;
 
@@ -101,10 +111,12 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCSRFToken()
             },
+            credentials: 'include',
             body: JSON.stringify({
-                comprador: uid,
+                comprador: compradorUid,
+                ofertador: usuarioActivo.uid,
                 puntuacion: rating,
                 comentario: comentario
             })
@@ -124,5 +136,4 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error("Error valorando comprador:", err);
         });
     });
-
 });
