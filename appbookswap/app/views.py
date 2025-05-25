@@ -300,3 +300,7 @@ def valorar_comprador(request):
     return Response({'success': False, 'errores': serializer.errors}, status=400)
 
 
+@login_required
+def publicaciones_view(request):
+    libros = Libro.objects.filter(user=request.user)
+    return render(request, 'vistas/publicaciones.html', {'libros': libros})

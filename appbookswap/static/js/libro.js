@@ -1,17 +1,21 @@
 // Obtiene el valor de una cookie por su nombre
-function getCookie(name) {
-    let cookieValue = null;
+function getCSRFToken() {
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
         for (let c of cookies) {
             const cookie = c.trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+            if (cookie.startsWith('csrftoken=')) {
+                return decodeURIComponent(cookie.substring('csrftoken='.length));
             }
         }
     }
-    return cookieValue;
+
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) {
+        return meta.getAttribute('content');
+    }
+
+    return null;
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -145,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCSRFToken()
             },
             body: JSON.stringify(data)
         })
