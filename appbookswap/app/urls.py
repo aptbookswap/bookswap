@@ -33,6 +33,9 @@ urlpatterns = [
     path('libros/eliminar/<uuid:id_libro>/', views.eliminar_libro, name='eliminar_libro'),
     path('api/libro/<uuid:id_libro>/', views.LibroAPIView.as_view(), name='libro_api'),
 
+    #Publicxación de libros
+    path('publicaciones/', views.publicaciones_view, name='publicaciones'),
+
     # Reset password
     path('password_reset/', auth_views.PasswordResetView.as_view(
         template_name='password_reset/form.html',
