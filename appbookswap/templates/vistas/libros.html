@@ -32,6 +32,9 @@
           <button class="btn btn-primary btn-sm mt-2" onclick="seleccionarLibro('{{ libro.id_libro }}')" data-bs-toggle="modal" data-bs-target="#detalleLibroModal">
             Detalles
           </button>
+          <a href="{% url 'crear_publicacion' %}" class="btn btn-primary btn-sm mt-2">
+          Publicar
+        </a>
         </div>
       </div>
     </div>
@@ -58,4 +61,5 @@
 <script src="{% static 'js/mapa.js' %}"></script>
 <script src="{% static 'js/modal_crear_libro.js' %}"></script>
 <script src="{% static 'js/modal_detalle_libro.js' %}"></script>
+
 {% endblock %}

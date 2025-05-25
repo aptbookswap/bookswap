@@ -1,0 +1,39 @@
+<div class="modal fade" id="detallePublicacionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalle de Publicación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h5 id="detalleTituloLibro" class="text-center mb-3 fw-bold"></h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Valor</label>
+            <input type="number" id="detalleValor" class="form-control" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Tipo de transacción</label>
+            <input type="text" id="detalleTipo" class="form-control" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Estado de publicación</label>
+            <input type="text" id="detalleEstado" class="form-control" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Descripción</label>
+            <textarea id="detalleDescripcion" class="form-control" rows="3" disabled></textarea>
+          </div>
+          <div class="col-12 mt-3">
+            <label class="form-label">Imágenes</label>
+            <div id="detalleImagenes" class="d-flex flex-wrap"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="confirmarEliminarPublicacionBtn">Eliminar</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

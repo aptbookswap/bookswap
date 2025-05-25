@@ -35,6 +35,8 @@ urlpatterns = [
 
     #Publicxación de libros
     path('publicaciones/', views.publicaciones_view, name='publicaciones'),
+    path('publicaciones/crear/', views.crear_publicacion_view, name='crear_publicacion'),
+    path('api/publicaciones/', views.crear_publicacion, name='api_crear_publicacion'),
 
     # Reset password
     path('password_reset/', auth_views.PasswordResetView.as_view(

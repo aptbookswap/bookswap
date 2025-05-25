@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Usuario, Libro, ImagenLibro, ValoracionAOfertador, ValoracionAComprador
+from .models import Usuario, Libro, ImagenLibro, ValoracionAOfertador, ValoracionAComprador, Publicacion, ImagenPublicacion
+
 
 class UsuarioSerializer(serializers.ModelSerializer):
     img_perfil = serializers.ImageField(use_url=True, required=False)
@@ -52,3 +53,23 @@ class ValoracionACompradorSerializer(serializers.ModelSerializer):
         model = ValoracionAComprador
         fields = ['id', 'ofertador', 'comprador', 'puntuacion', 'comentario', 'fecha']
         read_only_fields = ['id', 'fecha']
+
+
+class ImagenPublicacionSerializer(serializers.ModelSerializer):
+    imagen = serializers.ImageField(use_url=True)
+
+    class Meta:
+        model = ImagenPublicacion
+        fields = ['imagen']
+
+class PublicacionSerializer(serializers.ModelSerializer):
+    imagenes = ImagenPublicacionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Publicacion
+        fields = '__all__'
+        extra_kwargs = {
+            'id_publicacion': {'read_only': True},
+            'fecha_publicacion': {'read_only': True},
+            'user_ofertador': {'read_only': True}
+        }
