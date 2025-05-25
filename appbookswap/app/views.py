@@ -17,8 +17,8 @@ from rest_framework import status
 import json
 import datetime
 
-from .models import Usuario, Libro, ImagenLibro, Message, ValoracionAOfertador, ValoracionAComprador
-from .serializers import UsuarioSerializer, LibroSerializer, ValoracionAOfertadorSerializer, ValoracionACompradorSerializer
+from .models import Usuario, Libro, ImagenLibro, Message, ValoracionAOfertador, ValoracionAComprador, Publicacion, ImagenPublicacion
+from .serializers import UsuarioSerializer, LibroSerializer, ValoracionAOfertadorSerializer, ValoracionACompradorSerializer, PublicacionSerializer
 from .forms import MessageForm
 
 User = get_user_model()
@@ -304,3 +304,43 @@ def valorar_comprador(request):
 def publicaciones_view(request):
     libros = Libro.objects.filter(user=request.user)
     return render(request, 'vistas/publicaciones.html', {'libros': libros})
+
+@login_required
+def crear_publicacion_view(request):
+    libros = Libro.objects.filter(user=request.user)
+    return render(request, 'vistas/crear_publicacion.html', {'libros': libros})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def crear_publicacion(request):
+    try:
+        data = request.data
+        user_uid = data.get('user_id_ofertador')
+        libro_id = data.get('id_libro')
+        tipo = data.get('tipo_transaccion')
+        descripcion = data.get('descripcion')
+        valor = data.get('valor') or 0
+
+        if not all([user_uid, libro_id, tipo, descripcion]):
+            return Response({'error': 'Faltan datos obligatorios'}, status=400)
+
+        usuario = get_object_or_404(Usuario, uid=user_uid)
+        libro = get_object_or_404(Libro, id_libro=libro_id)
+
+        publicacion = Publicacion.objects.create(
+            user_id_ofertador=usuario,
+            id_libro=libro,
+            tipo_transaccion=tipo,
+            valor=valor,
+            descripcion=descripcion,
+            estado_publicacion="disponible",
+            fecha_publicacion=timezone.now()
+        )
+
+        for archivo in request.FILES.getlist('imagenes'):
+            ImagenPublicacion.objects.create(publicacion=publicacion, imagen=archivo)
+
+        return Response({'success': True, 'id': publicacion.id_publicacion}, status=201)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

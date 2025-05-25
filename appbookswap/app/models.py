@@ -128,3 +128,55 @@ class ValoracionAOfertador(models.Model):
     def __str__(self):
         return f'{self.comprador.username} → {self.ofertador.username} ({self.puntuacion} ⭐)'
 
+# Nuevo modelo para publicaciones
+class Publicacion(models.Model):
+    ESTADO_CHOICES = [
+        ('disponible', 'Disponible'),
+        ('en_espera', 'En espera'),
+        ('completado', 'Completado'),
+        ('cancelado', 'Cancelado'),
+    ]
+
+    TRANSACCION_CHOICES = [
+        ('venta', 'Venta'),
+        ('donacion', 'Donación'),
+    ]
+
+    id_publicacion = models.AutoField(primary_key=True)
+    fecha_publicacion = models.DateTimeField(auto_now_add=True)
+    fecha_termino = models.DateTimeField(null=True, blank=True)
+    
+    user_ofertador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='publicaciones_ofertadas',
+        to_field='uid'
+    )
+    libro = models.ForeignKey(
+        'Libro',
+        on_delete=models.CASCADE,
+        related_name='publicaciones'
+    )
+    user_comprador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='publicaciones_compradas',
+        to_field='uid'
+    )
+    valor = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tipo_transaccion = models.CharField(max_length=10, choices=TRANSACCION_CHOICES)
+    descripcion = models.TextField()
+    estado_publicacion = models.CharField(max_length=15, choices=ESTADO_CHOICES, default='disponible')
+
+    def __str__(self):
+        return f"{self.tipo_transaccion.title()} - {self.libro.titulo} ({self.estado_publicacion})"
+
+# Modelo para imágenes de la publicación
+class ImagenPublicacion(models.Model):
+    publicacion = models.ForeignKey(Publicacion, on_delete=models.CASCADE, related_name='imagenes')
+    imagen = models.ImageField(upload_to='publicaciones/')
+
+    def __str__(self):
+        return f"Imagen de publicación {self.publicacion.id_publicacion}"
