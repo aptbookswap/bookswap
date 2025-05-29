@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/libros.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
@@ -16,21 +17,34 @@
 
   <div class="row" id="publicacionesRow">
     {% for publicacion in publicaciones %}
-    <div class="col-md-4 mb-4" data-publicacion-id="{{ publicacion.id }}">
-      <div class="card">
+    <div class="col-md-4 mb-4" data-publicacion-id="{{ publicacion.id_publicacion }}">
+      <div class="card position-relative">
         {% if publicacion.imagenes.all %}
         <img src="{{ publicacion.imagenes.all.0.imagen.url }}" class="card-img-top" alt="Imagen publicación">
         {% endif %}
+
+        <!-- Botón de opciones -->
+        <div class="dropdown position-absolute top-0 end-0 m-2">
+          <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <a class="dropdown-item" href="{% url 'detalle_publicacion' publicacion.id_publicacion %}">Ver Detalles</a>
+            </li>
+          </ul>
+        </div>
+
         <div class="card-body text-center">
           <h5 class="card-title">{{ publicacion.libro.titulo }}</h5>
           <p class="card-text">
             {{ publicacion.descripcion|linebreaksbr }}<br>
-            Tipo: <strong>{{ publicacion.tipo_transaccion }}</strong><br>
-            {% if publicacion.tipo_transaccion == "Venta" %}
+            Tipo: <strong>{{ publicacion.tipo_transaccion|title }}</strong><br>
+            {% if publicacion.tipo_transaccion == "venta" %}
             Valor: ${{ publicacion.valor }}
             {% endif %}
           </p>
-          <span class="badge bg-secondary">{{ publicacion.estado_publicacion }}</span>
+          <span class="badge bg-secondary">{{ publicacion.estado_publicacion|title }}</span>
         </div>
       </div>
     </div>
