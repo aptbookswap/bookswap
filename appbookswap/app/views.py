@@ -12,6 +12,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.utils import timezone
 from rest_framework import status
 
 import json
@@ -300,10 +301,12 @@ def valorar_comprador(request):
     return Response({'success': False, 'errores': serializer.errors}, status=400)
 
 
+
 @login_required
 def publicaciones_view(request):
-    libros = Libro.objects.filter(user=request.user)
-    return render(request, 'vistas/publicaciones.html', {'libros': libros})
+    publicaciones = Publicacion.objects.filter(user_ofertador=request.user)
+    return render(request, 'vistas/publicaciones.html', {'publicaciones': publicaciones})
+
 
 @login_required
 def crear_publicacion_view(request):
@@ -315,26 +318,25 @@ def crear_publicacion_view(request):
 def crear_publicacion(request):
     try:
         data = request.data
-        user_uid = data.get('user_id_ofertador')
-        libro_id = data.get('id_libro')
+        uid_usuario = data.get('user')
+        libro_id = data.get('libro')
         tipo = data.get('tipo_transaccion')
         descripcion = data.get('descripcion')
         valor = data.get('valor') or 0
 
-        if not all([user_uid, libro_id, tipo, descripcion]):
+        if not all([uid_usuario, libro_id, tipo, descripcion]):
             return Response({'error': 'Faltan datos obligatorios'}, status=400)
 
-        usuario = get_object_or_404(Usuario, uid=user_uid)
+        usuario = get_object_or_404(Usuario, uid=uid_usuario)
         libro = get_object_or_404(Libro, id_libro=libro_id)
 
         publicacion = Publicacion.objects.create(
-            user_id_ofertador=usuario,
-            id_libro=libro,
-            tipo_transaccion=tipo,
+            user_ofertador=usuario,
+            libro=libro,
+            tipo_transaccion=tipo.lower(),  # Asegura que se guarde en minúsculas
             valor=valor,
             descripcion=descripcion,
-            estado_publicacion="disponible",
-            fecha_publicacion=timezone.now()
+            estado_publicacion="disponible"
         )
 
         for archivo in request.FILES.getlist('imagenes'):
@@ -344,3 +346,53 @@ def crear_publicacion(request):
 
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+@login_required
+def detalle_publicacion_view(request, id_publicacion):
+    publicacion = get_object_or_404(Publicacion, id_publicacion=id_publicacion, user_ofertador=request.user)
+    return render(request, 'vistas/detalle_publicacion.html', {
+        'publicacion': publicacion,
+        'libro': publicacion.libro
+    })
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def publicacion_detalle(request, id_publicacion):
+    try:
+        publicacion = Publicacion.objects.get(id_publicacion=id_publicacion)
+    except Publicacion.DoesNotExist:
+        return JsonResponse({'error': 'Publicación no encontrada'}, status=404)
+
+    if request.method == 'GET':
+        return JsonResponse({
+            'id': publicacion.id_publicacion,
+            'tipo_transaccion': publicacion.tipo_transaccion,
+            'valor': str(publicacion.valor),
+            'descripcion': publicacion.descripcion,
+            'estado_publicacion': publicacion.estado_publicacion,
+            'libro': {
+                'titulo': publicacion.libro.titulo,
+                'autor': publicacion.libro.autor,
+                'estado': publicacion.libro.estado,
+                'genero': publicacion.libro.genero,
+                'paginas': publicacion.libro.paginas,
+                'cantidad': publicacion.libro.cantidad,
+            }
+        })
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            publicacion.tipo_transaccion = data.get('tipo_transaccion', publicacion.tipo_transaccion)
+            publicacion.valor = data.get('valor', publicacion.valor)
+            publicacion.descripcion = data.get('descripcion', publicacion.descripcion)
+            publicacion.estado_publicacion = data.get('estado_publicacion', publicacion.estado_publicacion)
+            publicacion.save()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    elif request.method == 'DELETE':
+        publicacion.delete()
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
