@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const data = {
       tipo_transaccion: tipo,
-      valor: tipo === 'venta' ? valor : null,
+      valor: valor,
       descripcion: descripcion
     };
 

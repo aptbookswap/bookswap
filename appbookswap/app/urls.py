@@ -49,10 +49,13 @@ urlpatterns = [
     path('api/valorar/ofertador/', valorar_ofertador, name='valorar_ofertador'),
     path('api/valorar/comprador/', valorar_comprador, name='valorar_comprador'),
 
-    # API para modificar o eliminar publicación
+   
     path('publicaciones/<int:id_publicacion>/', views.publicacion_detalle, name='publicacion_detalle_api'),
     path('publicaciones/<int:id_publicacion>/', detalle_publicacion_view, name='detalle_publicacion'),
     path('api/publicacion/<int:id_publicacion>/', publicacion_detalle, name='publicacion_detalle'),
+    path('publicaciones/usuario/<uuid:uid>/', views.publicaciones_usuario_view, name='publicaciones_usuario'),
+
+
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
