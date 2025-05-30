@@ -21,7 +21,7 @@
 <section id="mapa" class="container mb-5">
     <h2 class="text-center mb-4">Libros en tu zona</h2>
     <div class="map-container">
-        <!-- Vista bloqueada si no está logueado -->
+        
         <div id="mapLoginOverlay" class="map-overlay login-required">
             <div class="map-content">
                 <i class="fas fa-lock fa-4x mb-3"></i>
@@ -34,7 +34,7 @@
             </div>
         </div>
 
-        <!-- Mapa real visible solo si logueado -->
+        
         <div id="realMap" style="display: none; width: 100%; height: 100%;">
             <div style="width: 100%; height: 100%; display: flex; flex-direction: column;">
                 <div class="bg-primary text-white p-2 d-flex justify-content-between align-items-center">
@@ -56,20 +56,19 @@
         </div>
     </div>
     
-    <!-- Datos de todos los usuarios -->
     <div id="usuarios-data" style="display: none;">
-        [
-        {% for usuario in usuarios_con_ubicacion %}
-            {
-                "id": {{ usuario.id }},
-                "username": "{{ usuario.first_name|default:usuario.username }}",
-                "coords": "{{ usuario.ubicacion }}"
-            }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-        ]
+    [
+    {% for usuario in usuarios_con_ubicacion %}
+        {
+            "uid": "{{ usuario.uid }}",
+            "username": "{{ usuario.first_name|default:usuario.username }}",
+            "coords": "{{ usuario.ubicacion }}"
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ]
     </div>
 
-    <!-- Datos específicos del usuario actual -->
+    
     <div id="usuario-actual-data"
         data-coords="{% if usuario_actual and usuario_actual.ubicacion %}{{ usuario_actual.ubicacion }}{% endif %}"
         data-username="{% if usuario_actual %}{{ usuario_actual.username }}{% endif %}"

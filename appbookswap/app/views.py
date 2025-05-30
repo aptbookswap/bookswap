@@ -333,7 +333,7 @@ def crear_publicacion(request):
         publicacion = Publicacion.objects.create(
             user_ofertador=usuario,
             libro=libro,
-            tipo_transaccion=tipo.lower(),  # Asegura que se guarde en minúsculas
+            tipo_transaccion=tipo.lower(),  
             valor=valor,
             descripcion=descripcion,
             estado_publicacion="disponible"
@@ -366,7 +366,7 @@ def publicacion_detalle(request, id_publicacion):
         return JsonResponse({
             'id': publicacion.id_publicacion,
             'tipo_transaccion': publicacion.tipo_transaccion,
-            'valor': str(publicacion.valor),
+            'valor': publicacion.valor,
             'descripcion': publicacion.descripcion,
             'estado_publicacion': publicacion.estado_publicacion,
             'libro': {
@@ -396,3 +396,12 @@ def publicacion_detalle(request, id_publicacion):
         return JsonResponse({'success': True})
 
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+    
+@login_required
+def publicaciones_usuario_view(request, uid):
+    usuario = get_object_or_404(Usuario, uid=uid)
+    publicaciones = Publicacion.objects.filter(user_ofertador=usuario)
+    return render(request, 'vistas/publicaciones_usuario.html', {
+        'usuario': usuario,
+        'publicaciones': publicaciones
+    })

@@ -1,36 +1,32 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Configuración inicial
     mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
-    
-    // Verificar sesión
+
     if (localStorage.getItem('usuarioActivo')) {
         document.getElementById('mapLoginOverlay').style.display = 'none';
         document.getElementById('realMap').style.display = 'block';
         initMap();
     }
 
-    function initMap() {        
-        // 1. Obtener datos del usuario actual
-        const coordElement = document.getElementById('usuario-actual-data');        
+    function initMap() {
+        const coordElement = document.getElementById('usuario-actual-data');
         const coordsStr = coordElement ? coordElement.getAttribute('data-coords') : null;
         const currentUsername = coordElement ? coordElement.getAttribute('data-username') : null;
-        
+
         let centerCoords = null;
         let hasStoredLocation = false;
-        
-        if (coordsStr && coordsStr.trim() !== '') {            
-            const parts = coordsStr.split(',');            
+
+        if (coordsStr && coordsStr.trim() !== '') {
+            const parts = coordsStr.split(',');
             if (parts.length === 2) {
                 const lng = parseFloat(parts[0]);
-                const lat = parseFloat(parts[1]);                
+                const lat = parseFloat(parts[1]);
                 if (!isNaN(lng) && !isNaN(lat)) {
                     centerCoords = [lng, lat];
                     hasStoredLocation = true;
-                } 
-            } 
+                }
+            }
         }
-        
-        // 2. Validar coordenadas
+
         if (!centerCoords) {
             document.getElementById('realMap').innerHTML = `
                 <div class="alert alert-warning">
@@ -39,8 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             return;
         }
-        
-        // 3. Crear mapa
+
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v11',
@@ -48,30 +43,23 @@ document.addEventListener('DOMContentLoaded', function() {
             zoom: 15
         });
 
-        // 4. Variables para controlar el GPS
         let watchingPosition = false;
         let currentPosition = null;
         let userMarker = null;
 
-        // 5. Función para actualizar la posición del usuario
         function updateUserPosition(position) {
             currentPosition = position;
-            
-            // Crear o actualizar el marcador del usuario
             if (!userMarker) {
-                // Crear elemento personalizado para el punto azul
                 const el = document.createElement('div');
                 el.className = 'user-location-marker';
                 el.innerHTML = '<div class="user-location-dot"></div>';
-                
                 userMarker = new mapboxgl.Marker(el)
                     .setLngLat([position.coords.longitude, position.coords.latitude])
                     .addTo(map);
             } else {
                 userMarker.setLngLat([position.coords.longitude, position.coords.latitude]);
             }
-            
-            // Mover el mapa manteniendo el zoom
+
             map.flyTo({
                 center: [position.coords.longitude, position.coords.latitude],
                 zoom: 15,
@@ -80,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // 6. Configurar geolocalización
         const geolocate = {
             activate: function() {
                 if (watchingPosition) {
@@ -90,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     userMarker = null;
                     return;
                 }
-                
+
                 this.watchId = navigator.geolocation.watchPosition(
                     (position) => {
                         updateUserPosition(position);
@@ -106,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 );
                 watchingPosition = true;
             },
-            
+
             trigger: function() {
                 if (!currentPosition) {
                     navigator.geolocation.getCurrentPosition(
@@ -128,7 +115,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
 
-        // 7. Botón personalizado para geolocalización
         const geoButton = document.createElement('button');
         geoButton.className = 'mapboxgl-ctrl-geolocate';
         geoButton.innerHTML = '<i class="fas fa-location-arrow"></i>';
@@ -137,7 +123,6 @@ document.addEventListener('DOMContentLoaded', function() {
             geolocate.trigger();
         });
 
-        // 8. Añadir controles al mapa
         map.addControl(new mapboxgl.NavigationControl());
         map.addControl({
             onAdd: function() {
@@ -149,10 +134,9 @@ document.addEventListener('DOMContentLoaded', function() {
             onRemove: function() {}
         }, 'top-right');
 
-        // 9. Cargar marcadores
         map.on('load', function() {
             loadUserMarkers(map);
-            
+
             if (!hasStoredLocation) {
                 setTimeout(() => {
                     geolocate.trigger();
@@ -163,8 +147,8 @@ document.addEventListener('DOMContentLoaded', function() {
         function loadUserMarkers(map) {
             try {
                 const usuariosData = JSON.parse(document.getElementById('usuarios-data').textContent || '[]');
-                const currentCoords = coordsStr.replace(/\s/g, ''); // Elimina espacios para comparar
-                
+                const currentCoords = coordsStr.replace(/\s/g, '');
+
                 usuariosData.forEach(function(usuario) {
                     try {
                         const [longitud, latitud] = usuario.coords.split(',').map(Number);
@@ -172,14 +156,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         const markerElement = document.createElement('div');
                         markerElement.className = 'user-marker-container';
-                        
-                        // Compara nombre Y coordenadas
+
                         const usuarioCoords = usuario.coords.replace(/\s/g, '');
-                        const isCurrentUser = usuario.username === currentUsername && 
-                                            usuarioCoords === currentCoords;
-                        
+                        const isCurrentUser = usuario.username === currentUsername && usuarioCoords === currentCoords;
+
                         const displayName = isCurrentUser ? 'Tú' : usuario.username;
-                        
+
                         markerElement.innerHTML = `
                             <div class="user-marker-content ${isCurrentUser ? 'current-user' : ''}">
                                 <div class="user-marker-icon">
@@ -194,9 +176,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
                                 <div class="map-popup-content">
                                     <h6>${displayName}</h6>
-                                    <a href="/perfil/${usuario.username}" class="btn btn-sm btn-primary">
-                                        Ver perfil
-                                    </a>
+                                    ${!isCurrentUser ? `<button class="btn btn-sm btn-primary" onclick="verPublicacionesUsuario('${usuario.uid}')">
+                                        Ver publicaciones
+                                    </button>` : ''}
                                 </div>
                             `))
                             .addTo(map);
@@ -210,3 +192,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+
+function verPublicacionesUsuario(uid) {
+    if (!uid) {
+        alert("Error: Usuario no válido");
+        return;
+    }
+    window.location.href = `/publicaciones/usuario/${uid}/`;
+}

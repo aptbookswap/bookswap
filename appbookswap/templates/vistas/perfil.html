@@ -10,36 +10,38 @@
 {% block content %}
 <div class="container my-5">
   <div class="row g-4">
-    <div class="col-md-5">
+    
+    
+    <div class="col-lg-5">
       <div class="card shadow-sm p-4">
-        <h5 class="fw-bold text-center mb-3">📬 Chatear con otros usuarios</h5>
-        <ul class="list-group list-group-flush">
-          {% for user in users %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              {{ user.first_name }} ({{ user.email }})
-              <div class="d-flex gap-2">
-                <a href="{% url 'chat' uid=user.uid %}" class="btn btn-sm btn-outline-primary">Chatear</a>
-                <button class="btn btn-sm btn-outline-success valorar-btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modalValorarOfertador"
-                        data-user-uid="{{ user.uid }}"
-                        data-user-name="{{ user.first_name }}">Valorar 1</button>
+        <h5 class="fw-bold text-center mb-3">📊 Valoraciones</h5>
 
-                <button class="btn btn-sm btn-outline-warning valorar-btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modalValorarComprador"
-                        data-user-uid="{{ user.uid }}"
-                        data-user-name="{{ user.first_name }}">Valorar 2</button>
-              </div>
-            </li>
-          {% empty %}
-            <li class="list-group-item text-center">No hay otros usuarios disponibles</li>
-          {% endfor %}
-        </ul>
+        <div class="mb-3 text-center">
+          <label class="form-label fw-bold">Como Ofertador</label>
+          <div id="rating-ofertador" class="text-warning fs-4">
+            ★★★★★
+          </div>
+          <small id="rating-ofertador-text">Cargando...</small>
+        </div>
+
+        <div class="mb-4 text-center">
+          <label class="form-label fw-bold">Como Comprador</label>
+          <div id="rating-comprador" class="text-warning fs-4">
+            ★★★★★
+          </div>
+          <small id="rating-comprador-text">Cargando...</small>
+        </div>
+
+        <div class="d-grid gap-2">
+          <a href="{% url 'libros' %}" class="btn btn-outline-primary">📚 Ver mis libros</a>
+          <a href="" class="btn btn-outline-success">📦 Historial de ventas</a>
+          <a href="" class="btn btn-outline-info">🛒 Historial de compras</a>
+        </div>
       </div>
     </div>
 
-    <div class="col-md-7">
+    
+    <div class="col-lg-7">
       <div class="card shadow-lg border-0 rounded-4 p-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h4 class="fw-bold mb-0">👤 Mi Perfil</h4>
@@ -106,7 +108,7 @@
   </div>
 </div>
 
-<!-- Modales -->
+
 <div class="modal fade" id="confirmarModificarModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -139,8 +141,6 @@
   </div>
 </div>
 
-{% include "vistas/partials/modal_valorar_ofertador.html" %}
-{% include "vistas/partials/modal_valorar_comprador.html" %}
 {% endblock %}
 
 {% block scripts %}

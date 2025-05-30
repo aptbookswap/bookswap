@@ -62,9 +62,9 @@
           </select>
         </div>
 
-        <div class="mb-3 {% if publicacion.tipo_transaccion != 'venta' %}d-none{% endif %}" id="grupoValor">
+        <div class="mb-3">
           <label for="valor" class="form-label">Valor (CLP)</label>
-          <input type="number" id="valor" class="form-control" value="{{ publicacion.valor|default_if_none:'' }}" disabled>
+          <input type="number" id="valor" class="form-control" value="{{ publicacion.valor }}" disabled>
         </div>
 
         <div class="mb-3">
@@ -94,22 +94,4 @@
 
 {% block scripts %}
 <script src="{% static 'js/detalle_publicacion.js' %}"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const tipoTransaccion = document.getElementById('tipo_transaccion');
-    const grupoValor = document.getElementById('grupoValor');
-    const inputValor = document.getElementById('valor');
-
-    if (tipoTransaccion && grupoValor && inputValor) {
-      tipoTransaccion.addEventListener('change', function () {
-        if (this.value === 'venta') {
-          grupoValor.classList.remove('d-none');
-        } else {
-          grupoValor.classList.add('d-none');
-          inputValor.value = '';
-        }
-      });
-    }
-  });
-</script>
 {% endblock %}
