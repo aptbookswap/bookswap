@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import valorar_ofertador, valorar_comprador, detalle_publicacion_view, publicacion_detalle
+from .views import valorar_ofertador, valorar_comprador, detalle_publicacion_view, publicacion_detalle, aceptar_publicacion
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
@@ -54,6 +54,8 @@ urlpatterns = [
     path('publicaciones/<int:id_publicacion>/', detalle_publicacion_view, name='detalle_publicacion'),
     path('api/publicacion/<int:id_publicacion>/', publicacion_detalle, name='publicacion_detalle'),
     path('publicaciones/usuario/<uuid:uid>/', views.publicaciones_usuario_view, name='publicaciones_usuario'),
+    path('api/publicacion/<int:publicacion_id>/aceptar/', aceptar_publicacion, name='aceptar_publicacion'),
+
 
 
 ]

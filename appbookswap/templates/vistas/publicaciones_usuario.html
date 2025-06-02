@@ -72,6 +72,12 @@
                 {% endif %}
               </p>
               <span class="badge bg-secondary">{{ publicacion.estado_publicacion|title }}</span>
+              <button class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="modal"
+                data-bs-target="#detallePublicacionModal"
+                onclick="verDetallePublicacion('{{ publicacion.id_publicacion }}')">
+              Detalles
+            </button>
+
             </div>
           </div>
         </div>
@@ -82,6 +88,36 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="detallePublicacionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalle de la Publicación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <h5 id="detalleTituloLibro"></h5>
+        <p><strong>Autor:</strong> <span id="detalleAutor"></span></p>
+        <p><strong>Estado:</strong> <span id="detalleEstadoLibro"></span></p>
+        <p><strong>Género:</strong> <span id="detalleGenero"></span></p>
+        <p><strong>Páginas:</strong> <span id="detallePaginas"></span></p>
+        <p><strong>Cantidad:</strong> <span id="detalleCantidad"></span></p>
+        <hr>
+        <p><strong>Tipo:</strong> <span id="detalleTipo"></span></p>
+        <p><strong>Valor:</strong> $<span id="detalleValor"></span></p>
+        <p><strong>Estado Publicación:</strong> <span id="detalleEstado"></span></p>
+        <p><strong>Descripción:</strong></p>
+        <p id="detalleDescripcion"></p>
+        <div id="detalleImagenes" class="d-flex flex-wrap"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btnAceptarPublicacion">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 {% include "vistas/partials/modal_valorar_ofertador.html" %}
 {% endblock %}

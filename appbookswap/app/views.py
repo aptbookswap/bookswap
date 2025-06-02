@@ -405,3 +405,31 @@ def publicaciones_usuario_view(request, uid):
         'usuario': usuario,
         'publicaciones': publicaciones
     })
+
+
+def aceptar_publicacion(request, publicacion_id):  # 👈 Importante
+    try:
+        data = json.loads(request.body)
+        comprador_uid = data.get('comprador_uid')
+
+        if not comprador_uid:
+            return JsonResponse({'success': False, 'error': 'No se recibió el UID del comprador'}, status=400)
+
+        publicacion = get_object_or_404(Publicacion, id_publicacion=publicacion_id)
+        comprador = get_object_or_404(Usuario, uid=comprador_uid)
+
+        # Validación adicional
+        if publicacion.user_comprador is not None:
+            return JsonResponse({'success': False, 'error': 'Esta publicación ya fue aceptada'}, status=400)
+
+        # Actualizar publicación
+        publicacion.user_comprador = comprador
+        publicacion.estado_publicacion = 'en_espera'
+        publicacion.save()
+
+        return JsonResponse({'success': True})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Formato de datos incorrecto'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
