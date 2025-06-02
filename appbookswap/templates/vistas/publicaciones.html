@@ -15,42 +15,71 @@
     <a href="{% url 'libros' %}" class="btn btn-outline-primary">Crear nueva publicación</a>
   </div>
 
-  <div class="row" id="publicacionesRow">
-    {% for publicacion in publicaciones %}
-    <div class="col-md-4 mb-4" data-publicacion-id="{{ publicacion.id_publicacion }}">
-      <div class="card position-relative">
-        {% if publicacion.imagenes.all %}
-        <img src="{{ publicacion.imagenes.all.0.imagen.url }}" class="card-img-top" alt="Imagen publicación">
-        {% endif %}
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-4" id="publicacionTabs" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#disponibles">Disponibles</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#enEspera">En espera</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#enProceso">En proceso</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#canceladas">Canceladas</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#completadas">Completadas</button></li>
+  </ul>
 
-        <!-- Botón de opciones -->
-        <div class="dropdown position-absolute top-0 end-0 m-2">
-          <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-ellipsis-v"></i>
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li>
-              <a class="dropdown-item" href="{% url 'detalle_publicacion' publicacion.id_publicacion %}">Ver Detalles</a>
-            </li>
-          </ul>
-        </div>
+  <div class="tab-content">
 
-        <div class="card-body text-center">
-          <h5 class="card-title">{{ publicacion.libro.titulo }}</h5>
-          <p class="card-text">
-            {{ publicacion.descripcion|linebreaksbr }}<br>
-            Tipo: <strong>{{ publicacion.tipo_transaccion|title }}</strong><br>
-            {% if publicacion.tipo_transaccion == "venta" %}
-            Valor: ${{ publicacion.valor }}
-            {% endif %}
-          </p>
-          <span class="badge bg-secondary">{{ publicacion.estado_publicacion|title }}</span>
-        </div>
+    <!-- Disponibles -->
+    <div class="tab-pane fade show active" id="disponibles">
+      <div class="row">
+        {% for publicacion in disponibles %}
+        {% include "vistas/partials/card_publicacion.html" %}
+        {% empty %}
+        <p class="text-center">No hay publicaciones disponibles.</p>
+        {% endfor %}
       </div>
     </div>
-    {% empty %}
-    <p class="text-center">Aún no has creado publicaciones.</p>
-    {% endfor %}
+
+    <!-- En espera -->
+    <div class="tab-pane fade" id="enEspera">
+      <div class="row">
+        {% for publicacion in en_espera %}
+        {% include "vistas/partials/card_publicacion.html" %}
+        {% empty %}
+        <p class="text-center">No hay publicaciones en espera.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- En proceso -->
+    <div class="tab-pane fade" id="enProceso">
+      <div class="row">
+        {% for publicacion in en_proceso %}
+        {% include "vistas/partials/card_publicacion.html" %}
+        {% empty %}
+        <p class="text-center">No hay publicaciones en proceso.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Canceladas -->
+    <div class="tab-pane fade" id="canceladas">
+      <div class="row">
+        {% for publicacion in canceladas %}
+        {% include "vistas/partials/card_publicacion.html" %}
+        {% empty %}
+        <p class="text-center">No hay publicaciones canceladas.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Completadas -->
+    <div class="tab-pane fade" id="completadas">
+      <div class="row">
+        {% for publicacion in completadas %}
+        {% include "vistas/partials/card_publicacion.html" %}
+        {% empty %}
+        <p class="text-center">No hay publicaciones completadas.</p>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
