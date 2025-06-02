@@ -1,5 +1,4 @@
 function getCSRFToken() {
-    // 1. Buscar en cookies
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
         for (let c of cookies) {
@@ -10,7 +9,6 @@ function getCSRFToken() {
         }
     }
 
-    // 2. Buscar en el <meta name="csrf-token"> como fallback
     const meta = document.querySelector('meta[name="csrf-token"]');
     if (meta) {
         return meta.getAttribute('content');
@@ -84,7 +82,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return res.json();
             })
             .then(data => {
-                // Rellenar los campos
                 document.getElementById('libro_id').value = data.id_libro;
                 document.getElementById('titulo_libro').value = data.titulo;
                 document.getElementById('autor_libro').value = data.autor;
@@ -99,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 });
+
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('formCrearPublicacion');
 
@@ -149,6 +147,81 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (error) {
                 console.error("Error al enviar formulario:", error);
                 alert("Error de red al crear la publicación.");
+            }
+        });
+    }
+});
+
+function verDetallePublicacion(id) {
+    publicacionActivaId = id;
+
+    fetch(`/api/publicacion/${id}/`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('detalleTituloLibro').textContent = data.libro.titulo;
+            document.getElementById('detalleAutor').textContent = data.libro.autor;
+            document.getElementById('detalleEstadoLibro').textContent = data.libro.estado;
+            document.getElementById('detalleGenero').textContent = data.libro.genero;
+            document.getElementById('detallePaginas').textContent = data.libro.paginas;
+            document.getElementById('detalleCantidad').textContent = data.libro.cantidad;
+
+            document.getElementById('detalleTipo').textContent = data.tipo_transaccion;
+            document.getElementById('detalleValor').textContent = data.valor;
+            document.getElementById('detalleEstado').textContent = data.estado_publicacion;
+            document.getElementById('detalleDescripcion').textContent = data.descripcion;
+
+            const imgContainer = document.getElementById('detalleImagenes');
+            imgContainer.innerHTML = '';
+            (data.imagenes || []).forEach(img => {
+                const imgTag = document.createElement('img');
+                imgTag.src = img.imagen;
+                imgTag.className = "img-thumbnail m-1";
+                imgTag.style.width = "100px";
+                imgContainer.appendChild(imgTag);
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error al cargar detalles de la publicación.");
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const aceptarBtn = document.getElementById('btnAceptarPublicacion');
+
+    if (aceptarBtn) {
+        aceptarBtn.addEventListener('click', async () => {
+            const usuarioActivo = JSON.parse(localStorage.getItem('usuarioActivo'));
+            if (!usuarioActivo || !usuarioActivo.uid) {
+                alert("Debe iniciar sesión para aceptar la publicación.");
+                return;
+            }
+
+            if (!publicacionActivaId) {
+                alert("No hay publicación seleccionada.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/publicacion/${publicacionActivaId}/aceptar/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ comprador_uid: usuarioActivo.uid })  // 👈 CORRECTO AHORA
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert("Has aceptado la publicación correctamente.");
+                    location.reload();
+                } else {
+                    alert(result.error || "No se pudo aceptar la publicación.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error al aceptar publicación.");
             }
         });
     }
