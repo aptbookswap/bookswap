@@ -420,7 +420,7 @@ def publicaciones_usuario_view(request, uid):
     })
 
 
-def aceptar_publicacion(request, publicacion_id):  # 👈 Importante
+def aceptar_publicacion(request, publicacion_id): 
     try:
         data = json.loads(request.body)
         comprador_uid = data.get('comprador_uid')
