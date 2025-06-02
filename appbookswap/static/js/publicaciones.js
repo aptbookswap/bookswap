@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getCSRFToken()
                     },
-                    body: JSON.stringify({ comprador_uid: usuarioActivo.uid })  // 👈 CORRECTO AHORA
+                    body: JSON.stringify({ comprador_uid: usuarioActivo.uid })  
                 });
 
                 const result = await response.json();

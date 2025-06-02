@@ -305,7 +305,20 @@ def valorar_comprador(request):
 @login_required
 def publicaciones_view(request):
     publicaciones = Publicacion.objects.filter(user_ofertador=request.user)
-    return render(request, 'vistas/publicaciones.html', {'publicaciones': publicaciones})
+
+    disponibles = publicaciones.filter(estado_publicacion='disponible')
+    en_espera = publicaciones.filter(estado_publicacion='en_espera')
+    en_proceso = publicaciones.filter(estado_publicacion='en_proceso')
+    canceladas = publicaciones.filter(estado_publicacion='cancelado')
+    completadas = publicaciones.filter(estado_publicacion='completado')
+
+    return render(request, 'vistas/publicaciones.html', {
+        'disponibles': disponibles,
+        'en_espera': en_espera,
+        'en_proceso': en_proceso,
+        'canceladas': canceladas,
+        'completadas': completadas,
+    })
 
 
 @login_required
@@ -400,14 +413,14 @@ def publicacion_detalle(request, id_publicacion):
 @login_required
 def publicaciones_usuario_view(request, uid):
     usuario = get_object_or_404(Usuario, uid=uid)
-    publicaciones = Publicacion.objects.filter(user_ofertador=usuario)
+    publicaciones = Publicacion.objects.filter(user_ofertador=usuario, estado_publicacion='disponible')
     return render(request, 'vistas/publicaciones_usuario.html', {
         'usuario': usuario,
         'publicaciones': publicaciones
     })
 
 
-def aceptar_publicacion(request, publicacion_id):  # 👈 Importante
+def aceptar_publicacion(request, publicacion_id): 
     try:
         data = json.loads(request.body)
         comprador_uid = data.get('comprador_uid')
