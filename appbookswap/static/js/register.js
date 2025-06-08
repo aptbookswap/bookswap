@@ -14,6 +14,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         fecha_nacimiento: document.getElementById('fecha_nacimiento').value.trim(),
         preferencias: document.getElementById('preferenciasInput').value.trim(),
         ubicacion: document.getElementById('ubicacion').value.trim(),
+        direccion: document.getElementById('direccion').value.trim(),
         password: document.getElementById('password').value,
         confirmPassword: document.getElementById('confirmPassword').value
     };
@@ -42,6 +43,12 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         return;
     }
 
+    if (!formData.direccion) {
+        showMessage('Debe seleccionar una ubicación válida que genere una dirección.', 'error');
+        return;
+    }
+
+
     // Enviar datos al backend
     try {
         const response = await fetch('/api/registro/', {
@@ -57,6 +64,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
                 fecha_nacimiento: formData.fecha_nacimiento,
                 preferencias: formData.preferencias,
                 ubicacion: formData.ubicacion,
+                direccion: formData.direccion,
                 password: formData.password
             })
         });
@@ -77,27 +85,21 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     }
 });
 
-// Función para inicializar el mapa con geolocalización
+// Inicializar mapa
 function initMap() {
     mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
-    
-    // Primero intentamos obtener la ubicación actual
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                // Crear mapa centrado en la ubicación del usuario
                 const userCoords = [position.coords.longitude, position.coords.latitude];
                 createMap(userCoords);
-                
-                // Colocar marcador secundario automáticamente
                 placeSecondaryMarker(userCoords);
                 updateLocationField(userCoords);
-                
-                // Mostrar mensaje
+                obtenerDireccion(userCoords[0], userCoords[1]);
                 showMessage('Ubicación detectada automáticamente', 'success');
             },
             (error) => {
-                // Si falla la geolocalización, usar ubicación por defecto (Viña del Mar)
                 console.warn('Error obteniendo ubicación:', error);
                 const defaultCoords = [-71.542969, -33.015347];
                 createMap(defaultCoords);
@@ -106,70 +108,94 @@ function initMap() {
             { enableHighAccuracy: true, timeout: 5000 }
         );
     } else {
-        // Navegador no soporta geolocalización
         const defaultCoords = [-71.542969, -33.015347];
         createMap(defaultCoords);
         showMessage('Tu navegador no soporta geolocalización', 'info');
     }
 }
 
-// Crear el mapa de Mapbox
 function createMap(centerCoords) {
     map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11',
         center: centerCoords,
-        zoom: 14, // Zoom más cercano para mejor precisión
+        zoom: 14,
         dragRotate: false
     });
 
-    // Configurar evento para agregar/editar marcador secundario con clic derecho
     map.on('contextmenu', (e) => {
         e.preventDefault();
-        placeSecondaryMarker([e.lngLat.lng, e.lngLat.lat]);
-        updateLocationField([e.lngLat.lng, e.lngLat.lat]);
+        const coords = [e.lngLat.lng, e.lngLat.lat];
+        placeSecondaryMarker(coords);
+        updateLocationField(coords);
+        obtenerDireccion(coords[0], coords[1]);
     });
 
-    // Añadir controles
     map.addControl(new mapboxgl.NavigationControl());
 }
 
-// Colocar o actualizar el marcador secundario
 function placeSecondaryMarker(coords) {
-    // Eliminar marcador anterior si existe
     if (secondaryMarker) {
         secondaryMarker.remove();
     }
-    
-    // Crear nuevo marcador secundario (visible y arrastrable)
+
     secondaryMarker = new mapboxgl.Marker({
-        color: '#FF0000', // Rojo
+        color: '#FF0000',
         draggable: true
     })
-    .setLngLat(coords)
-    .addTo(map);
-    
-    // Permitir edición arrastrando el marcador
-    secondaryMarker.on('dragend', () => {
+        .setLngLat(coords)
+        .addTo(map);
+
+    secondaryMarker.on('dragend', async () => {
         const newPos = secondaryMarker.getLngLat();
         updateLocationField([newPos.lng, newPos.lat]);
+        await obtenerDireccion(newPos.lng, newPos.lat);
     });
-    
-    // Centrar el mapa en la nueva ubicación
+
     map.flyTo({
         center: coords,
         essential: true
     });
 }
 
-// Actualizar campo ubicación con las coordenadas
 function updateLocationField(coords) {
     const [lng, lat] = coords;
     document.getElementById('ubicacion').value = `${lng.toFixed(6)},${lat.toFixed(6)}`;
     console.log('Ubicación actualizada:', document.getElementById('ubicacion').value);
 }
 
-// Función para mostrar mensajes
+async function obtenerDireccion(lng, lat) {
+    const accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${accessToken}&language=es&limit=1`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.features && data.features.length > 0) {
+            const direccion = data.features[0].place_name;
+
+            // Validar que la dirección esté en Chile
+            if (direccion.includes("Chile")) {
+                console.log("Dirección encontrada:", direccion);
+                document.getElementById('direccion').value = direccion;
+            } else {
+                console.warn("La dirección no está en Chile:", direccion);
+                document.getElementById('direccion').value = "Ubicación fuera de Chile";
+                showMessage('Por favor selecciona una ubicación dentro de Chile.', 'error');
+            }
+        } else {
+            console.warn("No se encontró dirección.");
+            document.getElementById('direccion').value = "Dirección no encontrada";
+        }
+    } catch (error) {
+        console.error("Error obteniendo dirección:", error);
+        document.getElementById('direccion').value = "Error al obtener dirección";
+    }
+}
+
+
+// Mensajes de estado
 function showMessage(text, type) {
     const messageBox = document.getElementById('message');
     messageBox.textContent = text;
@@ -177,9 +203,8 @@ function showMessage(text, type) {
     setTimeout(() => messageBox.textContent = '', 3000);
 }
 
-// Manejador de preferencias (tags)
+// Manejo de preferencias (tags)
 document.addEventListener('DOMContentLoaded', function () {
-    // Inicializar el mapa
     if (document.getElementById('map')) {
         initMap();
     }
@@ -218,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Función para obtener el token CSRF
+// CSRF token helper
 function getCookie(name) {
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {

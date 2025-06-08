@@ -40,6 +40,7 @@ class Usuario(AbstractUser):
     valoracion_comprador = models.FloatField(null=True, blank=True)  
     valoracion_ofertador = models.FloatField(null=True, blank=True)  
     ubicacion = models.CharField(max_length=100)  
+    direccion = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.username

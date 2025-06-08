@@ -75,10 +75,17 @@
             </div>
         </div>
 
+        <!-- Mapa y ubicación -->
         <div class="form-group">
-                <label>Ubicación (Le sugerimos que no use su ubicacion actual, use una referencia)</label>
-                <div id="map" style="width: 100%; height: 300px; margin: 10px 0; border: 1px solid #ddd;"></div>
-                <input type="text" id="ubicacion" placeholder="Coordenadas (se completan automáticamente)" readonly>
+            <label>Ubicación (Le sugerimos que no use su ubicación actual, use una referencia)</label>
+            <div id="map" style="width: 100%; height: 300px; margin: 10px 0; border: 1px solid #ddd;"></div>
+            <input type="text" id="ubicacion" placeholder="Coordenadas (se completan automáticamente)" readonly>
+        </div>
+
+        <!-- Dirección obtenida -->
+        <div class="form-group">
+            <label>Dirección</label>
+            <input type="text" id="direccion" placeholder="Dirección obtenida" readonly>
         </div>
 
         <button type="submit">Crear cuenta con correo</button>
@@ -92,7 +99,6 @@
 </div>
 
 <script src="{% static 'js/register.js' %}"></script>
-
 
 </body>
 </html>
