@@ -88,7 +88,6 @@ def api_registro(request):
             numero=data.get('numero') or None,
             fecha_nacimiento=fecha_nacimiento,
             ubicacion=data.get('ubicacion') or '',
-            direccion=data.get('direccion') or '',
             preferencias=data.get('preferencias') or ''
         )
         usuario.set_password(password)
@@ -445,5 +444,66 @@ def aceptar_publicacion(request, publicacion_id):
 
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Formato de datos incorrecto'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+
+@login_required
+def confirmar_en_proceso(request, publicacion_id):
+    try:
+        publicacion = get_object_or_404(Publicacion, id_publicacion=publicacion_id)
+
+        if request.user != publicacion.user_ofertador:
+            return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+
+        if publicacion.estado_publicacion != 'en_espera':
+            return JsonResponse({'success': False, 'error': 'La publicación no está en espera'}, status=400)
+
+        publicacion.estado_publicacion = 'en_proceso'
+        publicacion.save()
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+@login_required
+def cancelar_publicacion(request, publicacion_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+    try:
+        publicacion = get_object_or_404(Publicacion, id_publicacion=publicacion_id)
+
+        usuario = request.user
+        if usuario != publicacion.user_ofertador and usuario != publicacion.user_comprador:
+            return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+
+        if publicacion.estado_publicacion not in ['en_espera', 'en_proceso']:
+            return JsonResponse({'success': False, 'error': 'No se puede cancelar en el estado actual'}, status=400)
+
+        publicacion.estado_publicacion = 'cancelado'
+        publicacion.save()
+
+        return JsonResponse({'success': True})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+def volver_a_disponible(request, publicacion_id):
+    try:
+        publicacion = get_object_or_404(Publicacion, id_publicacion=publicacion_id)
+
+        # Solo el ofertador puede reactivar la publicación
+        if request.user != publicacion.user_ofertador:
+            return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+
+        if publicacion.estado_publicacion != 'cancelado':
+            return JsonResponse({'success': False, 'error': 'La publicación no está cancelada'}, status=400)
+
+        publicacion.estado_publicacion = 'disponible'
+        publicacion.user_comprador = None
+        publicacion.save()
+
+        return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

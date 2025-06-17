@@ -226,3 +226,79 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+async function cambiarEstadoAEnProceso(publicacionId) {
+    const confirmar = confirm("¿Deseas marcar esta publicación como 'En proceso'?");
+    if (!confirmar) return;
+
+    try {
+        const response = await fetch(`/api/publicacion/${publicacionId}/confirmar-en-proceso/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+            alert("La publicación ha sido marcada como 'En proceso'");
+            location.reload();
+        } else {
+            alert(data.error || "No se pudo actualizar el estado.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Error al actualizar el estado.");
+    }
+}
+
+
+async function cancelarPublicacion(publicacionId) {
+    const confirmar = confirm("¿Estás seguro de que deseas cancelar esta publicación?");
+    if (!confirmar) return;
+
+    try {
+        const response = await fetch(`/api/publicacion/${publicacionId}/cancelar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+
+        const result = await response.json();
+        if (response.ok && result.success) {
+            alert("La publicación ha sido cancelada.");
+            location.reload();
+        } else {
+            alert(result.error || "No se pudo cancelar la publicación.");
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Error al cancelar la publicación.");
+    }
+}
+
+async function volverADisponible(publicacionId) {
+    const confirmar = confirm("¿Deseas volver a publicar esta publicación?");
+    if (!confirmar) return;
+
+    try {
+        const response = await fetch(`/api/publicacion/${publicacionId}/volver-a-disponible/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+            alert("La publicación ha vuelto a estar disponible.");
+            location.reload();
+        } else {
+            alert(data.error || "No se pudo actualizar la publicación.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Error al actualizar el estado.");
+    }
+}
