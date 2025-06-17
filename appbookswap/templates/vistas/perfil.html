@@ -5,13 +5,13 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/perfil.css' %}">
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
 <div class="container my-5">
   <div class="row g-4">
-    
-    
+
     <div class="col-lg-5">
       <div class="card shadow-sm p-4">
         <h5 class="fw-bold text-center mb-3">📊 Valoraciones</h5>
@@ -40,7 +40,6 @@
       </div>
     </div>
 
-    
     <div class="col-lg-7">
       <div class="card shadow-lg border-0 rounded-4 p-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -92,10 +91,19 @@
               <div id="preferenciasReadOnly" class="mt-2 text-muted"></div>
               <input type="hidden" id="preferenciasInput" class="editable" name="preferencias">
             </div>
-            <div class="col-md-6">
-              <label for="ubicacion" class="form-label">Ubicación</label>
-              <input type="text" class="form-control editable" id="ubicacion" disabled>
+
+            <!-- Aquí insertamos el mapa y dirección -->
+            <div class="col-12">
+              <label class="form-label">Ubicación (Le sugerimos que no use su ubicación actual, use una referencia)</label>
+              <div id="map" style="width: 100%; height: 300px; margin: 10px 0; border: 1px solid #ddd;"></div>
+              <input type="text" id="ubicacion" placeholder="Coordenadas (se completan automáticamente)" class="form-control editable" readonly>
             </div>
+
+            <div class="col-12">
+              <label class="form-label">Dirección</label>
+              <input type="text" id="direccion" placeholder="Dirección obtenida" class="form-control editable" readonly>
+            </div>
+
           </div>
 
           <div class="mt-4 text-end">
@@ -105,10 +113,11 @@
         </form>
       </div>
     </div>
+
   </div>
 </div>
 
-
+<!-- Modales confirmación -->
 <div class="modal fade" id="confirmarModificarModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -144,6 +153,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
 <script src="{% static 'js/perfil.js' %}"></script>
 <script src="{% static 'js/valoracion.js' %}"></script>
 {% endblock %}

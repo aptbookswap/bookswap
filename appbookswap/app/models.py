@@ -3,6 +3,9 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.conf import settings
 import uuid
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.core.mail import send_mail
 
 # Ruta de subida para imágenes de perfil
 def upload_to(instance, filename):
@@ -37,21 +40,62 @@ class Usuario(AbstractUser):
     valoracion_comprador = models.FloatField(null=True, blank=True)  
     valoracion_ofertador = models.FloatField(null=True, blank=True)  
     ubicacion = models.CharField(max_length=100)  
+    direccion = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.username
 
 User = get_user_model()
 
-# Modelo de mensaje entre usuarios
+# Modelo de mensaje entre usuarios (MODIFICADO)
 class Message(models.Model):
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sent_messages', on_delete=models.CASCADE) 
     recipient = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='received_messages', on_delete=models.CASCADE)  
     content = models.TextField() 
-    timestamp = models.DateTimeField(auto_now_add=True)  
+    timestamp = models.DateTimeField(auto_now_add=True)
+    conversation_notified = models.BooleanField(default=False)  # Nuevo campo
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['sender', 'recipient', 'conversation_notified'],
+                name='unique_conversation_notification',
+                condition=models.Q(conversation_notified=True))
+        ]
 
     def __str__(self):
         return f'{self.sender.username} to {self.recipient.username}: {self.content}'
+
+# Señal MODIFICADA para notificación única por conversación
+@receiver(post_save, sender=Message)
+def notify_new_conversation(sender, instance, created, **kwargs):
+    if created and not instance.conversation_notified:
+        # Verificar si ya existe notificación para esta combinación de usuarios
+        existing_notification = Message.objects.filter(
+            sender=instance.sender,
+            recipient=instance.recipient,
+            conversation_notified=True
+        ).exists()
+        
+        if not existing_notification:
+            subject = f"💬 ¡{instance.sender.first_name} quiere contactarte en BookSwap!"
+            message = f"""
+            Hola {instance.recipient.first_name},
+            
+            {instance.sender.first_name} Intenta contactarse contigo, revisa tu chat en Bookswap
+            
+            ¡Gracias por usar BookSwap!
+            (No responder este mensaje)
+            """
+            send_mail(
+                subject,
+                message.strip(),
+                settings.DEFAULT_FROM_EMAIL,
+                [instance.recipient.email],
+                fail_silently=False,
+            )
+            instance.conversation_notified = True
+            instance.save()
 
 # Modelo de libro ofrecido por el usuario
 class Libro(models.Model):
@@ -90,7 +134,7 @@ class ValoracionAComprador(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='valoraciones_hechas_a_comprador',
-        to_field='uid'  # 👈 importante si el campo clave en Supabase es uid
+        to_field='uid'
     )
     comprador = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -104,7 +148,6 @@ class ValoracionAComprador(models.Model):
 
     def __str__(self):
         return f'{self.ofertador.username} → {self.comprador.username} ({self.puntuacion} ⭐)'
-
 
 # Modelo tabla valoraciones Ofertador
 class ValoracionAOfertador(models.Model):

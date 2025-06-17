@@ -16,6 +16,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
             'fecha_nacimiento',
             'preferencias',
             'ubicacion',
+            'direccion',
             'img_perfil'
         ]
         extra_kwargs = {

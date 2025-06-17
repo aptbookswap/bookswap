@@ -88,6 +88,7 @@ def api_registro(request):
             numero=data.get('numero') or None,
             fecha_nacimiento=fecha_nacimiento,
             ubicacion=data.get('ubicacion') or '',
+            direccion=data.get('direccion') or '',
             preferencias=data.get('preferencias') or ''
         )
         usuario.set_password(password)
