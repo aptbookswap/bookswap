@@ -446,3 +446,4 @@ def aceptar_publicacion(request, publicacion_id):
         return JsonResponse({'success': False, 'error': 'Formato de datos incorrecto'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
