@@ -176,6 +176,7 @@ class Publicacion(models.Model):
     ESTADO_CHOICES = [
         ('disponible', 'Disponible'),
         ('en_espera', 'En espera'),
+        ('en_proceso', 'En proceso'),
         ('completado', 'Completado'),
         ('cancelado', 'Cancelado'),
     ]

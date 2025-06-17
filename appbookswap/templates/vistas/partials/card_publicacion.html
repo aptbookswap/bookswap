@@ -21,6 +21,32 @@
         {% endif %}
       </p>
       <span class="badge bg-secondary">{{ publicacion.estado_publicacion|title }}</span>
+
+      {# Confirmar En Proceso #}
+      {% if publicacion.estado_publicacion == 'en_espera' and publicacion.user_ofertador == request.user %}
+      <button class="btn btn-success btn-sm mt-2"
+              onclick="cambiarEstadoAEnProceso('{{ publicacion.id_publicacion }}')">
+        Confirmar En Proceso
+      </button>
+      {% endif %}
+
+      {# Cancelar publicación #}
+      {% if publicacion.estado_publicacion == 'en_espera' or publicacion.estado_publicacion == 'en_proceso' %}
+        {% if request.user == publicacion.user_ofertador or request.user == publicacion.user_comprador %}
+        <button class="btn btn-danger btn-sm mt-2"
+                onclick="cancelarPublicacion('{{ publicacion.id_publicacion }}')">
+          Cancelar Publicación
+        </button>
+        {% endif %}
+      {% endif %}
+
+      {# Volver a publicar si está cancelado #}
+      {% if publicacion.estado_publicacion == 'cancelado' and publicacion.user_ofertador == request.user %}
+      <button class="btn btn-primary btn-sm mt-2"
+              onclick="volverADisponible('{{ publicacion.id_publicacion }}')">
+        Volver a Publicar
+      </button>
+      {% endif %}
     </div>
   </div>
 </div>
