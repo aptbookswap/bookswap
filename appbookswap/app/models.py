@@ -174,6 +174,7 @@ class ValoracionAOfertador(models.Model):
 # Nuevo modelo para publicaciones
 class Publicacion(models.Model):
     ESTADO_CHOICES = [
+        ('borrador', 'Borrador'),
         ('disponible', 'Disponible'),
         ('en_espera', 'En espera'),
         ('en_proceso', 'En proceso'),

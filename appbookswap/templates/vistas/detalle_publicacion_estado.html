@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle Estado Publicación | BookSwap{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="text-center mb-4">Estado de la Publicación</h2>
+
+  <div class="card shadow p-4">
+    <div class="row">
+
+      <!-- Columna izquierda: Libro e información de la publicación -->
+      <div class="col-md-6 border-end">
+        {% if publicacion.imagenes.all %}
+        <div class="text-center mb-3">
+          <img src="{{ publicacion.imagenes.all.0.imagen.url }}" class="img-fluid rounded" style="max-width: 300px;">
+        </div>
+        {% endif %}
+
+        <h4 class="text-center">{{ publicacion.libro.titulo }}</h4>
+        <p class="text-center"><span class="badge bg-secondary">{{ publicacion.estado_publicacion|title }}</span></p>
+
+        <hr>
+        <h5>Información del Libro</h5>
+        <p><strong>Autor:</strong> {{ publicacion.libro.autor }}</p>
+        <p><strong>Género:</strong> {{ publicacion.libro.genero }}</p>
+        <p><strong>Estado:</strong> {{ publicacion.libro.estado }}</p>
+        <p><strong>Páginas:</strong> {{ publicacion.libro.paginas }}</p>
+        <p><strong>Cantidad disponible:</strong> {{ publicacion.libro.cantidad }}</p>
+
+        <hr>
+        <h5>Datos de la Publicación</h5>
+        <p><strong>Tipo de transacción:</strong> {{ publicacion.tipo_transaccion|title }}</p>
+        {% if publicacion.tipo_transaccion == "venta" %}
+        <p><strong>Valor:</strong> ${{ publicacion.valor }}</p>
+        {% endif %}
+        <p><strong>Descripción:</strong><br>{{ publicacion.descripcion|linebreaksbr }}</p>
+      </div>
+
+      <!-- Columna derecha: Información del comprador -->
+      <div class="col-md-6">
+        <h5 class="text-center mb-3">Datos del Comprador</h5>
+        {% if publicacion.user_comprador %}
+        <div class="d-flex align-items-center mb-3">
+          <img src="{{ publicacion.user_comprador.img_perfil.url }}" class="rounded-circle me-3" style="width: 80px; height: 80px; object-fit: cover;">
+          <div>
+            <p class="mb-1"><strong>Nombre:</strong> {{ publicacion.user_comprador.first_name }}</p>
+            <p class="mb-1"><strong>Email:</strong> {{ publicacion.user_comprador.email }}</p>
+            <p class="mb-1"><strong>Teléfono:</strong> {{ publicacion.user_comprador.numero }}</p>
+            <p class="mb-1"><strong>Ubicación:</strong> {{ publicacion.user_comprador.ubicacion }}</p>
+            <p class="mb-1"><strong>Preferencia:</strong> {{ publicacion.user_comprador.preferencias }}</p>
+          </div>
+        </div>
+        {% else %}
+        <p class="text-muted text-center">Aún no hay comprador asignado.</p>
+        {% endif %}
+
+        <hr>
+
+        <div class="text-center mt-4">
+          {% if publicacion.estado_publicacion == 'en_espera' and publicacion.user_ofertador == request.user %}
+          <button class="btn btn-success mb-2"
+                  onclick="cambiarEstadoAEnProceso('{{ publicacion.id_publicacion }}')">
+            Confirmar En Proceso
+          </button>
+          {% endif %}
+
+          {% if publicacion.estado_publicacion == 'en_espera' or publicacion.estado_publicacion == 'en_proceso' %}
+            {% if request.user == publicacion.user_ofertador or request.user == publicacion.user_comprador %}
+            <button class="btn btn-danger mb-2"
+                    onclick="cancelarPublicacion('{{ publicacion.id_publicacion }}')">
+              Cancelar Publicación
+            </button>
+            {% endif %}
+          {% endif %}
+
+          {% if publicacion.estado_publicacion == 'en_proceso' %}
+            {% if request.user == publicacion.user_ofertador or request.user == publicacion.user_comprador %}
+            <button class="btn btn-primary mb-2"
+                    onclick="marcarCompletado('{{ publicacion.id_publicacion }}')">
+              Marcar como Completado
+            </button>
+            {% endif %}
+          {% endif %}
+
+          {% if publicacion.estado_publicacion == 'cancelado' and publicacion.user_ofertador == request.user %}
+          <button class="btn btn-primary mb-2"
+                  onclick="volverADisponible('{{ publicacion.id_publicacion }}')">
+            Volver a Publicar
+          </button>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/publicaciones.js' %}"></script>
+{% endblock %}
