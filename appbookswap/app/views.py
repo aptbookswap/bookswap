@@ -11,6 +11,7 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from django.core.exceptions import PermissionDenied
 from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework import status
@@ -306,6 +307,7 @@ def valorar_comprador(request):
 def publicaciones_view(request):
     publicaciones = Publicacion.objects.filter(user_ofertador=request.user)
 
+    borradores = publicaciones.filter(estado_publicacion='borrador')
     disponibles = publicaciones.filter(estado_publicacion='disponible')
     en_espera = publicaciones.filter(estado_publicacion='en_espera')
     en_proceso = publicaciones.filter(estado_publicacion='en_proceso')
@@ -313,6 +315,7 @@ def publicaciones_view(request):
     completadas = publicaciones.filter(estado_publicacion='completado')
 
     return render(request, 'vistas/publicaciones.html', {
+        'borradores': borradores,
         'disponibles': disponibles,
         'en_espera': en_espera,
         'en_proceso': en_proceso,
@@ -349,7 +352,7 @@ def crear_publicacion(request):
             tipo_transaccion=tipo.lower(),  
             valor=valor,
             descripcion=descripcion,
-            estado_publicacion="disponible"
+            estado_publicacion="borrador"
         )
 
         for archivo in request.FILES.getlist('imagenes'):
@@ -507,3 +510,72 @@ def volver_a_disponible(request, publicacion_id):
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+@login_required
+def marcar_completado(request, publicacion_id):
+    try:
+        publicacion = get_object_or_404(Publicacion, id_publicacion=publicacion_id)
+
+        if request.user != publicacion.user_ofertador and request.user != publicacion.user_comprador:
+            return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+
+        if publicacion.estado_publicacion != 'en_proceso':
+            return JsonResponse({'success': False, 'error': 'La publicación no está en proceso'}, status=400)
+
+        publicacion.estado_publicacion = 'completado'
+        publicacion.save()
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+@login_required
+def detalle_publicacion_estado_view(request, id_publicacion):
+    publicacion = get_object_or_404(Publicacion, id_publicacion=id_publicacion)
+
+    # Permitir solo si el usuario es el ofertador o el comprador
+    if request.user != publicacion.user_ofertador and request.user != publicacion.user_comprador:
+        raise PermissionDenied("No tienes permiso para ver esta publicación.")
+
+    return render(request, 'vistas/detalle_publicacion_estado.html', {
+        'publicacion': publicacion,
+        'libro': publicacion.libro
+    })
+
+def Publicar(request, publicacion_id):
+    try:
+        publicacion = get_object_or_404(Publicacion, id_publicacion=publicacion_id)
+
+        # Solo el ofertador puede reactivar la publicación
+        if request.user != publicacion.user_ofertador:
+            return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+
+
+        publicacion.estado_publicacion = 'disponible'
+        publicacion.user_comprador = None
+        publicacion.save()
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+@login_required
+def publicaciones_comprador_view(request):
+    publicaciones = Publicacion.objects.filter(user_comprador=request.user)
+    return render(request, 'vistas/publicaciones_comprador.html', {'publicaciones': publicaciones})
+
+
+def publicaciones_comprador_view(request):
+    publicaciones = Publicacion.objects.filter(user_comprador=request.user)
+
+    en_espera = publicaciones.filter(estado_publicacion='en_espera')
+    en_proceso = publicaciones.filter(estado_publicacion='en_proceso')
+    completadas = publicaciones.filter(estado_publicacion='completado')
+    canceladas = publicaciones.filter(estado_publicacion='cancelado')
+
+    return render(request, 'vistas/publicaciones_comprador.html', {
+        'en_espera': en_espera,
+        'en_proceso': en_proceso,
+        'completadas': completadas,
+        'canceladas': canceladas,
+    })

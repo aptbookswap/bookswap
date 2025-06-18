@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mis Compras | BookSwap{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/libros.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="text-center mb-4">Mis Compras</h2>
+
+  {% if en_espera %}
+  <h4 class="mt-4">🕒 En Espera</h4>
+  <div class="row g-4">
+    {% for publicacion in en_espera %}
+      {% include 'vistas/partials/card_publicacion.html' %}
+    {% endfor %}
+  </div>
+
+  {% endif %}
+
+  {% if en_proceso %}
+  <h4 class="mt-4">🕒 En Proceso</h4>
+  <div class="row g-4">
+    {% for publicacion in en_proceso %}
+      {% include 'vistas/partials/card_publicacion.html' %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if completadas %}
+  <h4 class="mt-4">🏁 Completadas</h4>
+  <div class="row g-4">
+    {% for publicacion in completadas %}
+      {% include 'vistas/partials/card_publicacion.html' %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if canceladas %}
+  <h4 class="mt-4">❌ Canceladas</h4>
+  <div class="row g-4">
+    {% for publicacion in canceladas %}
+      {% include 'vistas/partials/card_publicacion.html' %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not en_proceso and not completadas and not canceladas %}
+  <p class="text-center text-muted mt-4">No tienes compras registradas aún.</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/publicaciones.js' %}"></script>
+{% endblock %}

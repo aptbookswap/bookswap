@@ -302,3 +302,54 @@ async function volverADisponible(publicacionId) {
         alert("Error al actualizar el estado.");
     }
 }
+
+async function marcarCompletado(publicacionId) {
+    const confirmar = confirm("¿Confirmas que la transacción ha sido completada?");
+    if (!confirmar) return;
+
+    try {
+        const response = await fetch(`/api/publicacion/${publicacionId}/marcar-completado/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+            alert("La publicación ha sido marcada como 'Completada'.");
+            location.reload();
+        } else {
+            alert(data.error || "No se pudo actualizar el estado.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Error al actualizar el estado.");
+    }
+}
+
+async function Publicar(publicacionId) {
+    const confirmar = confirm("¿Deseas publicar esta publicación?");
+    if (!confirmar) return;
+
+    try {
+        const response = await fetch(`/api/publicacion/${publicacionId}/Publicar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+            alert("La publicación esta disponible.");
+            location.reload();
+        } else {
+            alert(data.error || "No se pudo actualizar la publicación.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Error al actualizar el estado.");
+    }
+}
+

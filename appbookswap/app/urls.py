@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import valorar_ofertador, valorar_comprador, detalle_publicacion_view, publicacion_detalle, aceptar_publicacion, confirmar_en_proceso,volver_a_disponible
+from .views import valorar_ofertador, valorar_comprador, detalle_publicacion_view, publicacion_detalle, aceptar_publicacion, confirmar_en_proceso,volver_a_disponible, marcar_completado, detalle_publicacion_estado_view, Publicar,publicaciones_comprador_view
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/publicaciones/', views.crear_publicacion, name='api_crear_publicacion'),
 
     path('publicaciones/<int:id_publicacion>/', views.detalle_publicacion_view, name='detalle_publicacion'),
+    path('publicaciones/estado/<int:id_publicacion>/', views.detalle_publicacion_estado_view, name='detalle_publicacion_estado'),
 
     path('password_reset/', auth_views.PasswordResetView.as_view(
         template_name='password_reset/form.html',
@@ -58,6 +59,11 @@ urlpatterns = [
     path('api/publicacion/<int:publicacion_id>/confirmar-en-proceso/', confirmar_en_proceso, name='confirmar_en_proceso'),
     path('api/publicacion/<int:publicacion_id>/cancelar/', views.cancelar_publicacion, name='cancelar_publicacion'),
     path('api/publicacion/<int:publicacion_id>/volver-a-disponible/', volver_a_disponible, name='volver_a_disponible'),
+    path('api/publicacion/<int:publicacion_id>/marcar-completado/', marcar_completado, name='marcar_completado'),
+    path('api/publicacion/<int:publicacion_id>/Publicar/', Publicar, name='Publicar'),
+
+    path('publicaciones_comprador/', views.publicaciones_comprador_view, name='publicaciones_comprador'),
+
 
 
 

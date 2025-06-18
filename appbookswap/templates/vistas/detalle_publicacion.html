@@ -85,6 +85,46 @@
           <button type="button" id="btnModificar" class="btn btn-primary" disabled>Modificar</button>
           <button type="button" id="btnEliminar" class="btn btn-danger">Eliminar</button>
         </div>
+
+        <div class="mt-4 text-center">
+
+          {# Confirmar En Proceso #}
+          {% if publicacion.estado_publicacion == 'en_espera' and request.user == publicacion.user_ofertador %}
+            <button type="button" class="btn btn-success me-2"
+                    onclick="cambiarEstadoAEnProceso('{{ publicacion.id_publicacion }}')">
+              Confirmar En Proceso
+            </button>
+          {% endif %}
+
+          {# Cancelar publicación #}
+          {% if publicacion.estado_publicacion == 'en_espera' or publicacion.estado_publicacion == 'en_proceso' %}
+            {% if request.user == publicacion.user_ofertador or request.user == publicacion.user_comprador %}
+              <button type="button" class="btn btn-danger me-2"
+                      onclick="cancelarPublicacion('{{ publicacion.id_publicacion }}')">
+                Cancelar Publicación
+              </button>
+            {% endif %}
+          {% endif %}
+
+          {# Marcar como Completado #}
+          {% if publicacion.estado_publicacion == 'en_proceso' %}
+            {% if request.user == publicacion.user_ofertador or request.user == publicacion.user_comprador %}
+              <button type="button" class="btn btn-primary me-2"
+                      onclick="marcarCompletado('{{ publicacion.id_publicacion }}')">
+                Marcar como Completado
+              </button>
+            {% endif %}
+          {% endif %}
+
+          {# Volver a publicar si está cancelado #}
+          {% if publicacion.estado_publicacion == 'cancelado' and request.user == publicacion.user_ofertador %}
+            <button type="button" class="btn btn-secondary"
+                    onclick="volverADisponible('{{ publicacion.id_publicacion }}')">
+              Volver a Publicar
+            </button>
+          {% endif %}
+
+        </div>
       </div>
 
     </div>
@@ -93,5 +133,6 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'js/publicaciones.js' %}"></script>
 <script src="{% static 'js/detalle_publicacion.js' %}"></script>
 {% endblock %}
