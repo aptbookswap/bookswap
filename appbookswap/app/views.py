@@ -12,6 +12,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import PermissionDenied
+from django.db.models import Avg
 from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework import status
@@ -56,7 +57,11 @@ def registro(request):
 @login_required
 def perfil(request):
     usuarios = Usuario.objects.exclude(id=request.user.id)
-    return render(request, 'vistas/perfil.html', {'users': usuarios})
+    promedios = obtener_promedios_valoraciones(request.user)
+    return render(request, 'vistas/perfil.html', {
+        'users': usuarios,
+        **promedios
+    })
 
 @login_required
 def user_list(request):
@@ -258,7 +263,7 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 @permission_classes([IsAuthenticated])
 def valorar_ofertador(request):
     try:
-        ofertador_uid = request.data.get('ofertador_id')  # <-- Corregido
+        ofertador_uid = request.data.get('ofertador_id')  
         ofertador = Usuario.objects.get(uid=ofertador_uid)
     except Usuario.DoesNotExist:
         return Response({'success': False, 'mensaje': 'Ofertador no encontrado'}, status=404)
@@ -266,7 +271,7 @@ def valorar_ofertador(request):
     data = {
         'comprador': request.user.uid,
         'ofertador': ofertador.uid,
-        'puntuacion': request.data.get('rating'),  # <-- Corregido
+        'puntuacion': request.data.get('rating'),  
         'comentario': request.data.get('comentario')
     }
 
@@ -281,7 +286,7 @@ def valorar_ofertador(request):
 @permission_classes([IsAuthenticated])
 def valorar_comprador(request):
     try:
-        comprador_uid = request.data.get('comprador_id')  # <-- Corregido
+        comprador_uid = request.data.get('comprador_id')  
         comprador = Usuario.objects.get(uid=comprador_uid)
     except Usuario.DoesNotExist:
         return Response({'success': False, 'mensaje': 'Comprador no encontrado'}, status=404)
@@ -289,7 +294,7 @@ def valorar_comprador(request):
     data = {
         'ofertador': request.user.uid,
         'comprador': comprador.uid,
-        'puntuacion': request.data.get('rating'),  # <-- Corregido
+        'puntuacion': request.data.get('rating'),  
         'comentario': request.data.get('comentario')
     }
 
@@ -415,9 +420,11 @@ def publicacion_detalle(request, id_publicacion):
 def publicaciones_usuario_view(request, uid):
     usuario = get_object_or_404(Usuario, uid=uid)
     publicaciones = Publicacion.objects.filter(user_ofertador=usuario, estado_publicacion='disponible')
+    promedios = obtener_promedios_valoraciones(usuario)
     return render(request, 'vistas/publicaciones_usuario.html', {
         'usuario': usuario,
-        'publicaciones': publicaciones
+        'publicaciones': publicaciones,
+        **promedios
     })
 
 
@@ -533,13 +540,20 @@ def marcar_completado(request, publicacion_id):
 def detalle_publicacion_estado_view(request, id_publicacion):
     publicacion = get_object_or_404(Publicacion, id_publicacion=id_publicacion)
 
-    # Permitir solo si el usuario es el ofertador o el comprador
     if request.user != publicacion.user_ofertador and request.user != publicacion.user_comprador:
         raise PermissionDenied("No tienes permiso para ver esta publicación.")
 
+    comprador = publicacion.user_comprador
+    ofertador = publicacion.user_ofertador
+
+    promedios_comprador = obtener_promedios_valoraciones(comprador) if comprador else {}
+    promedios_ofertador = obtener_promedios_valoraciones(ofertador)
+
     return render(request, 'vistas/detalle_publicacion_estado.html', {
         'publicacion': publicacion,
-        'libro': publicacion.libro
+        'libro': publicacion.libro,
+        'promedios_comprador': promedios_comprador,
+        'promedios_ofertador': promedios_ofertador,
     })
 
 def Publicar(request, publicacion_id):
@@ -579,3 +593,10 @@ def publicaciones_comprador_view(request):
         'completadas': completadas,
         'canceladas': canceladas,
     })
+def obtener_promedios_valoraciones(usuario):
+    promedio_comprador = ValoracionAComprador.objects.filter(comprador=usuario.uid).aggregate(prom=Avg('puntuacion'))['prom']
+    promedio_ofertador = ValoracionAOfertador.objects.filter(ofertador=usuario.uid).aggregate(prom=Avg('puntuacion'))['prom']
+    return {
+        'promedio_comprador': round(promedio_comprador or 0, 1),
+        'promedio_ofertador': round(promedio_ofertador or 0, 1)
+    }
