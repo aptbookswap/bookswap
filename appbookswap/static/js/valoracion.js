@@ -1,4 +1,3 @@
-// Función robusta para obtener el CSRF token
 function getCSRFToken() {
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
@@ -18,122 +17,134 @@ function getCSRFToken() {
     return null;
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    const usuarioActivo = JSON.parse(localStorage.getItem('usuarioActivo'));
-    if (!usuarioActivo) {
-        console.error("No se encontró usuario activo en localStorage.");
+let publicacionActivaId = null;
+
+// Mostrar modal de valoración al ofertador
+function abrirModalValorarOfertador(idPublicacion, uidOfertador) {
+    publicacionActivaId = idPublicacion;
+    const modal = new bootstrap.Modal(document.getElementById('modalValorarOfertador'));
+    document.querySelector('#modalValorarOfertador input[name="publicacion_id"]').value = idPublicacion;
+    document.querySelector('#modalValorarOfertador input[name="ofertador_id"]').value = uidOfertador;
+    modal.show();
+}
+
+// Mostrar modal de valoración al comprador
+function abrirModalValorarComprador(idPublicacion, uidComprador) {
+    publicacionActivaId = idPublicacion;
+    const modal = new bootstrap.Modal(document.getElementById('modalValorarComprador'));
+    document.querySelector('#modalValorarComprador input[name="publicacion_id"]').value = idPublicacion;
+    document.querySelector('#modalValorarComprador input[name="comprador_id"]').value = uidComprador;
+    modal.show();
+}
+
+// Enviar valoración al ofertador
+document.getElementById('formValorarOfertador')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const ofertadorId = document.getElementById('ofertadorId').value;
+    const rating = document.querySelector('#formValorarOfertador input[name="rating"]:checked')?.value;
+    const comentario = document.getElementById('comentario_ofertador').value;
+
+    if (!rating || !comentario) {
+        alert("Por favor completa la puntuación y el comentario.");
         return;
     }
 
-    // === MODAL: Valorar al Ofertador ===
-    const modalOfertador = document.getElementById('modalValorarOfertador');
-    modalOfertador?.addEventListener('show.bs.modal', event => {
-        const button = event.relatedTarget;
-        const userUid = button.getAttribute('data-user-uid');
-        const userName = button.getAttribute('data-user-name');
-
-        const modalTitle = modalOfertador.querySelector('.modal-title');
-        const inputUserUid = modalOfertador.querySelector('#ofertadorId');
-
-        modalTitle.textContent = `Valorar a ${userName}`;
-        inputUserUid.value = userUid;
-    });
-
-    document.getElementById('formValorarOfertador')?.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const ofertadorUid = document.getElementById('ofertadorId').value;
-        const rating = document.querySelector('#formValorarOfertador input[name="rating"]:checked')?.value;
-        const comentario = document.getElementById('comentario_ofertador').value;
-
-        if (!rating) {
-            alert("Selecciona una puntuación para el ofertador");
-            return;
-        }
-
-        fetch('/api/valorar/ofertador/', {
+    try {
+        const res = await fetch('/api/valorar/ofertador/', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
+                'X-CSRFToken': getCSRFToken(),
+                'Content-Type': 'application/json'
             },
             credentials: 'include',
             body: JSON.stringify({
-                ofertador: ofertadorUid,
-                comprador: usuarioActivo.uid,
-                puntuacion: rating,
+                ofertador_id: ofertadorId,
+                rating: rating,
                 comentario: comentario
             })
-        })
-        .then(res => res.json().then(data => ({ ok: res.ok, data })))
-        .then(res => {
-            if (res.ok) {
-                alert("¡Valoración al ofertador enviada!");
-                bootstrap.Modal.getInstance(modalOfertador).hide();
-                this.reset();
-            } else {
-                console.error("Errores:", res.data);
-                alert("Error al enviar la valoración.");
-            }
-        })
-        .catch(err => {
-            console.error("Error valorando ofertador:", err);
         });
-    });
 
-    // === MODAL: Valorar al Comprador ===
-    const modalComprador = document.getElementById('modalValorarComprador');
-    modalComprador?.addEventListener('show.bs.modal', event => {
-        const button = event.relatedTarget;
-        const userUid = button.getAttribute('data-user-uid');
-        const userName = button.getAttribute('data-user-name');
-
-        const modalTitle = modalComprador.querySelector('.modal-title');
-        const inputUserUid = modalComprador.querySelector('#compradorId');
-
-        modalTitle.textContent = `Valorar a ${userName}`;
-        inputUserUid.value = userUid;
-    });
-
-    document.getElementById('formValorarComprador')?.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const compradorUid = document.getElementById('compradorId').value;
-        const rating = document.querySelector('#formValorarComprador input[name="rating"]:checked')?.value;
-        const comentario = document.getElementById('comentario_comprador').value;
-
-        if (!rating) {
-            alert("Selecciona una puntuación para el comprador");
-            return;
+        if (res.ok) {
+            await marcarComoCompletado();
+            alert("¡Valoración al ofertador enviada!");
+            bootstrap.Modal.getInstance(document.getElementById('modalValorarOfertador')).hide();
+            this.reset();
+            location.reload();
+        } else {
+            const errorData = await res.json();
+            alert(errorData.error || "Error al enviar valoración.");
         }
-
-        fetch('/api/valorar/comprador/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                comprador: compradorUid,
-                ofertador: usuarioActivo.uid,
-                puntuacion: rating,
-                comentario: comentario
-            })
-        })
-        .then(res => res.json().then(data => ({ ok: res.ok, data })))
-        .then(res => {
-            if (res.ok) {
-                alert("¡Valoración al comprador enviada!");
-                bootstrap.Modal.getInstance(modalComprador).hide();
-                this.reset();
-            } else {
-                console.error("Errores:", res.data);
-                alert("Error al enviar la valoración.");
-            }
-        })
-        .catch(err => {
-            console.error("Error valorando comprador:", err);
-        });
-    });
+    } catch (err) {
+        console.error(err);
+        alert("Ocurrió un error al enviar la valoración.");
+    }
 });
+
+// Enviar valoración al comprador
+document.getElementById('formValorarComprador')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const compradorId = document.getElementById('compradorId').value;
+    const rating = document.querySelector('#formValorarComprador input[name="rating"]:checked')?.value;
+    const comentario = document.getElementById('comentario_comprador').value;
+
+    if (!rating || !comentario) {
+        alert("Por favor completa la puntuación y el comentario.");
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/valorar/comprador/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                comprador_id: compradorId,
+                rating: rating,
+                comentario: comentario
+            })
+        });
+
+        if (res.ok) {
+            await marcarComoCompletado();
+            alert("¡Valoración al comprador enviada!");
+            bootstrap.Modal.getInstance(document.getElementById('modalValorarComprador')).hide();
+            this.reset();
+            location.reload();
+        } else {
+            const errorData = await res.json();
+            alert(errorData.error || "Error al enviar valoración.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Ocurrió un error al enviar la valoración.");
+    }
+});
+
+// Marcar publicación como completada
+async function marcarComoCompletado() {
+    if (!publicacionActivaId) {
+        console.warn("No hay ID de publicación activa.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/publicacion/${publicacionActivaId}/marcar-completado/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            console.error("Error al marcar como completado");
+        }
+    } catch (err) {
+        console.error("Error marcando como completado:", err);
+    }
+}

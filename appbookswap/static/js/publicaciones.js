@@ -278,7 +278,7 @@ async function cancelarPublicacion(publicacionId) {
     }
 }
 
-async function volverADisponible(publicacionId) {
+async function volver_a_disponible(publicacionId) {
     const confirmar = confirm("¿Deseas volver a publicar esta publicación?");
     if (!confirmar) return;
 
@@ -303,30 +303,38 @@ async function volverADisponible(publicacionId) {
     }
 }
 
-async function marcarCompletado(publicacionId) {
-    const confirmar = confirm("¿Confirmas que la transacción ha sido completada?");
-    if (!confirmar) return;
+function marcarCompletado(publicacionId) {
+    console.log("Abrir modal para valoración. ID:", publicacionId);
 
-    try {
-        const response = await fetch(`/api/publicacion/${publicacionId}/marcar-completado/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCSRFToken()
-            }
-        });
+    const usuarioActivo = JSON.parse(localStorage.getItem('usuarioActivo'));
+    if (!usuarioActivo) {
+        alert("Usuario no autenticado.");
+        return;
+    }
 
-        const data = await response.json();
-        if (response.ok && data.success) {
-            alert("La publicación ha sido marcada como 'Completada'.");
-            location.reload();
-        } else {
-            alert(data.error || "No se pudo actualizar el estado.");
-        }
-    } catch (err) {
-        console.error(err);
-        alert("Error al actualizar el estado.");
+    const ofertadorInput = document.querySelector('[name="ofertador_id"]');
+    const compradorInput = document.querySelector('[name="comprador_id"]');
+
+    const ofertadorUid = ofertadorInput?.value;
+    const compradorUid = compradorInput?.value;
+    const ofertadorNombre = ofertadorInput?.dataset.nombre || 'ofertador';
+    const compradorNombre = compradorInput?.dataset.nombre || 'comprador';
+
+    if (usuarioActivo.uid === ofertadorUid) {
+        const modal = new bootstrap.Modal(document.getElementById('modalValorarComprador'));
+        document.getElementById('compradorId').value = compradorUid;
+        document.querySelector('#modalValorarComprador .modal-title').textContent = `Valorar a ${compradorNombre}`;
+        modal.show();
+    } else if (usuarioActivo.uid === compradorUid) {
+        const modal = new bootstrap.Modal(document.getElementById('modalValorarOfertador'));
+        document.getElementById('ofertadorId').value = ofertadorUid;
+        document.querySelector('#modalValorarOfertador .modal-title').textContent = `Valorar a ${ofertadorNombre}`;
+        modal.show();
+    } else {
+        alert("No tienes permiso para valorar esta publicación.");
     }
 }
+
 
 async function Publicar(publicacionId) {
     const confirmar = confirm("¿Deseas publicar esta publicación?");
