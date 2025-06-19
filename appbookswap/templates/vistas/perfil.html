@@ -21,7 +21,7 @@
           <div id="rating-ofertador" class="text-warning fs-4">
             ★★★★★
           </div>
-          <small id="rating-ofertador-text">Cargando...</small>
+          <small id="rating-ofertador-text">{{ promedio_ofertador|default:"Sin valoraciones" }}</small>
         </div>
 
         <div class="mb-4 text-center">
@@ -29,7 +29,7 @@
           <div id="rating-comprador" class="text-warning fs-4">
             ★★★★★
           </div>
-          <small id="rating-comprador-text">Cargando...</small>
+          <small id="rating-comprador-text">{{ promedio_comprador|default:"Sin valoraciones" }}</small>
         </div>
 
         <div class="d-grid gap-2">

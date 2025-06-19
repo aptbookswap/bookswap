@@ -27,26 +27,19 @@
           <li class="list-group-item"><strong>Ubicación:</strong> {{ usuario.ubicacion }}</li>
         </ul>
 
-        <div class="mt-3 text-center">
-          <a href="{% url 'chat' uid=usuario.uid %}" class="btn btn-primary btn-sm">Chatear</a>
-          <button class="btn btn-success btn-sm valorar-btn" data-bs-toggle="modal" data-bs-target="#modalValorarOfertador"
-                  data-user-uid="{{ usuario.uid }}" data-user-name="{{ usuario.first_name }}">Valorar</button>
-        </div>
-
-        
         <div class="mt-4 text-center">
           <h6 class="fw-bold mb-2">⭐ Valoraciones</h6>
 
           <div class="mb-2">
             <strong>Como Ofertador</strong><br>
             <div id="rating-ofertador" class="text-warning fs-5">★★★★★</div>
-            <small id="rating-ofertador-text">Cargando...</small>
+            <small id="rating-ofertador-text">{{ promedio_ofertador|default:"Sin valoraciones" }}</small>
           </div>
 
           <div>
             <strong>Como Comprador</strong><br>
             <div id="rating-comprador" class="text-warning fs-5">★★★★★</div>
-            <small id="rating-comprador-text">Cargando...</small>
+            <small id="rating-comprador-text">{{ promedio_comprador|default:"Sin valoraciones" }}</small>
           </div>
         </div>
       </div>
