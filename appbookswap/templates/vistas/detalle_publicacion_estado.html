@@ -14,7 +14,7 @@
   <div class="card shadow p-4">
     <div class="row">
 
-      <!-- Columna izquierda: Libro e información de la publicación -->
+      <!-- Columna izquierda -->
       <div class="col-md-6 border-end">
         {% if publicacion.imagenes.all %}
         <div class="text-center mb-3">
@@ -40,9 +40,10 @@
         <p><strong>Valor:</strong> ${{ publicacion.valor }}</p>
         {% endif %}
         <p><strong>Descripción:</strong><br>{{ publicacion.descripcion|linebreaksbr }}</p>
+        <p><strong>Estado:</strong><br>{{ publicacion.estado_publicacion|linebreaksbr }}</p>
       </div>
 
-      <!-- Columna derecha: Información del comprador -->
+      <!-- Columna derecha -->
       <div class="col-md-6">
         <h5 class="text-center mb-3">Datos del Comprador</h5>
         {% if publicacion.user_comprador %}
@@ -80,28 +81,40 @@
           {% endif %}
 
           {% if publicacion.estado_publicacion == 'en_proceso' %}
-            {% if request.user == publicacion.user_ofertador or request.user == publicacion.user_comprador %}
-            <button class="btn btn-primary mb-2"
-                    onclick="marcarCompletado('{{ publicacion.id_publicacion }}')">
-              Marcar como Completado
-            </button>
+            {% if request.user == publicacion.user_ofertador %}
+              <button class="btn btn-primary mb-2"
+                      onclick="abrirModalValorarComprador('{{ publicacion.id_publicacion }}', '{{ publicacion.user_comprador.uid }}')">
+                Marcar como Completado
+              </button>
+            {% elif request.user == publicacion.user_comprador %}
+              <button class="btn btn-primary mb-2"
+                      onclick="abrirModalValorarOfertador('{{ publicacion.id_publicacion }}', '{{ publicacion.user_ofertador.uid }}')">
+                Marcar como Completado
+              </button>
             {% endif %}
           {% endif %}
 
+
           {% if publicacion.estado_publicacion == 'cancelado' and publicacion.user_ofertador == request.user %}
           <button class="btn btn-primary mb-2"
-                  onclick="volverADisponible('{{ publicacion.id_publicacion }}')">
+                  onclick="volver_a_disponible('{{ publicacion.id_publicacion }}')">
             Volver a Publicar
           </button>
           {% endif %}
         </div>
-
       </div>
     </div>
   </div>
 </div>
+
+<!-- Modales -->
+{% include 'vistas/partials/modal_valorar_comprador.html' %}
+{% include 'vistas/partials/modal_valorar_ofertador.html' %}
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'js/valoracion.js' %}"></script>
 <script src="{% static 'js/publicaciones.js' %}"></script>
+
+
 {% endblock %}

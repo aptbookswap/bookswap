@@ -258,32 +258,30 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 @permission_classes([IsAuthenticated])
 def valorar_ofertador(request):
     try:
-        ofertador_uid = request.data.get('ofertador')
+        ofertador_uid = request.data.get('ofertador_id')  # <-- Corregido
         ofertador = Usuario.objects.get(uid=ofertador_uid)
     except Usuario.DoesNotExist:
         return Response({'success': False, 'mensaje': 'Ofertador no encontrado'}, status=404)
 
     data = {
-        'comprador': request.user.uid, 
+        'comprador': request.user.uid,
         'ofertador': ofertador.uid,
-        'puntuacion': request.data.get('puntuacion'),
+        'puntuacion': request.data.get('rating'),  # <-- Corregido
         'comentario': request.data.get('comentario')
     }
 
     serializer = ValoracionAOfertadorSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
-
         return Response({'success': True, 'mensaje': 'Valoración al ofertador registrada'})
     return Response({'success': False, 'errores': serializer.errors}, status=400)
-
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def valorar_comprador(request):
     try:
-        comprador_uid = request.data.get('comprador')
+        comprador_uid = request.data.get('comprador_id')  # <-- Corregido
         comprador = Usuario.objects.get(uid=comprador_uid)
     except Usuario.DoesNotExist:
         return Response({'success': False, 'mensaje': 'Comprador no encontrado'}, status=404)
@@ -291,7 +289,7 @@ def valorar_comprador(request):
     data = {
         'ofertador': request.user.uid,
         'comprador': comprador.uid,
-        'puntuacion': request.data.get('puntuacion'),
+        'puntuacion': request.data.get('rating'),  # <-- Corregido
         'comentario': request.data.get('comentario')
     }
 
@@ -492,24 +490,26 @@ def cancelar_publicacion(request, publicacion_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
     
+@api_view(['POST'])    
 def volver_a_disponible(request, publicacion_id):
     try:
-        publicacion = get_object_or_404(Publicacion, id_publicacion=publicacion_id)
+        publicacion = Publicacion.objects.get(id_publicacion=publicacion_id)
 
-        # Solo el ofertador puede reactivar la publicación
-        if request.user != publicacion.user_ofertador:
-            return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+        # Verifica permisos
+        if publicacion.user_ofertador != request.user:
+            return Response({'success': False, 'error': 'No tienes permiso'}, status=403)
 
-        if publicacion.estado_publicacion != 'cancelado':
-            return JsonResponse({'success': False, 'error': 'La publicación no está cancelada'}, status=400)
+        # Estados válidos para volver a disponible
+        if publicacion.estado_publicacion in ['cancelado', 'completado', 'en_espera', 'en_proceso']:
+            publicacion.estado_publicacion = 'disponible'
+            publicacion.user_comprador = None  # Esto borra la referencia al comprador
+            publicacion.save()
+            return Response({'success': True, 'mensaje': 'Publicación reactivada'})
+        else:
+            return Response({'success': False, 'error': 'Estado no válido'}, status=400)
 
-        publicacion.estado_publicacion = 'disponible'
-        publicacion.user_comprador = None
-        publicacion.save()
-
-        return JsonResponse({'success': True})
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    except Publicacion.DoesNotExist:
+        return Response({'success': False, 'error': 'Publicación no encontrada'}, status=404)
     
 @login_required
 def marcar_completado(request, publicacion_id):
