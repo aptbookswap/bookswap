@@ -1,10 +1,26 @@
+let chatUID = null;
+
+function abrirChatModal(uid, nombre) {
+    chatUID = uid;
+    document.getElementById("chatUsername").textContent = nombre;
+
+    const modal = new bootstrap.Modal(document.getElementById('chatModal'));
+    modal.show();
+
+    fetchMessages();
+}
+
 function scrollToBottom() {
     const chatMessages = document.getElementById("chat-messages");
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 }
 
 function fetchMessages() {
-    fetch(window.location.pathname + "fetch/")
+    if (!chatUID) return;
+
+    fetch(`/chat/${chatUID}/fetch/`)
         .then(response => response.json())
         .then(data => {
             document.getElementById("chat-messages").innerHTML = data.html;
@@ -12,16 +28,16 @@ function fetchMessages() {
         });
 }
 
-document.getElementById("send-message-form").addEventListener("submit", function (e) {
+document.getElementById("send-message-form")?.addEventListener("submit", function (e) {
     e.preventDefault();
 
     const input = document.getElementById("contentInput");
     const content = input.value.trim();
-    if (!content) return;
+    if (!content || !chatUID) return;
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    fetch(window.location.pathname, {
+    fetch(`/chat/${chatUID}/`, {
         method: "POST",
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -37,4 +53,3 @@ document.getElementById("send-message-form").addEventListener("submit", function
 });
 
 setInterval(fetchMessages, 3000);
-window.onload = scrollToBottom;
