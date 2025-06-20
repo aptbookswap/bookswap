@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<link rel="stylesheet" href="{% static 'css/chat.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -57,6 +58,20 @@
             <p class="mb-1"><strong>Preferencia:</strong> {{ publicacion.user_comprador.preferencias }}</p>
             <p class="mb-1"><strong>⭐ Valoración como comprador:</strong> {{ promedios_comprador.promedio_comprador|default:"Sin valoraciones" }}</p>
             <p class="mb-1"><strong>⭐ Valoración como ofertador:</strong> {{ promedios_ofertador.promedio_ofertador|default:"Sin valoraciones" }}</p>
+
+            {% if request.user == publicacion.user_comprador %}
+              <button class="btn btn-outline-dark btn-sm"
+                      onclick="abrirChatModal('{{ publicacion.user_ofertador.uid }}', '{{ publicacion.user_ofertador.first_name }}')">
+                <i class="fa fa-comment"></i> Chatear con el ofertador
+              </button>
+            {% elif request.user == publicacion.user_ofertador and publicacion.user_comprador %}
+              <button class="btn btn-outline-dark btn-sm"
+                      onclick="abrirChatModal('{{ publicacion.user_comprador.uid }}', '{{ publicacion.user_comprador.first_name }}')">
+                <i class="fa fa-comment"></i> Chatear con el comprador
+              </button>
+            {% endif %}
+
+
 
           </div>
         </div>
@@ -113,13 +128,15 @@
 <!-- Modales -->
 {% include 'vistas/partials/modal_valorar_comprador.html' %}
 {% include 'vistas/partials/modal_valorar_ofertador.html' %}
+{% include "vistas/partials/modal_chat.html" %}
 {% endblock %}
 
 {% block scripts %}
-
-
-<script src="{% static 'js/valoracion.js' %}"></script>
+<script src="{% static 'js/chat.js' %}"></script>
 <script src="{% static 'js/publicaciones.js' %}"></script>
+<script src="{% static 'js/valoracion.js' %}"></script>
+
+
 
 
 {% endblock %}

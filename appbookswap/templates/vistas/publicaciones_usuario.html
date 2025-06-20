@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/libros.css' %}">
+<link rel="stylesheet" href="{% static 'css/chat.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
 
@@ -26,6 +27,12 @@
           <li class="list-group-item"><strong>Preferencias:</strong> {{ usuario.preferencias }}</li>
           <li class="list-group-item"><strong>Ubicación:</strong> {{ usuario.ubicacion }}</li>
         </ul>
+
+       <button class="btn btn-outline-dark btn-sm" onclick="abrirChatModal('{{ usuario.uid }}', '{{ usuario.first_name }}')">
+        <i class="fa fa-comment"></i> Chatear
+      </button>
+
+
 
         <div class="mt-4 text-center">
           <h6 class="fw-bold mb-2">⭐ Valoraciones</h6>
@@ -113,9 +120,12 @@
 
 
 {% include "vistas/partials/modal_valorar_ofertador.html" %}
+{% include "vistas/partials/modal_chat.html" %}
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'js/chat.js' %}"></script>
 <script src="{% static 'js/publicaciones.js' %}"></script>
 <script src="{% static 'js/valoracion.js' %}"></script>
+
 {% endblock %}
