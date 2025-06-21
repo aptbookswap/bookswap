@@ -84,6 +84,13 @@
         <div class="d-flex justify-content-between mt-4">
           <button type="button" id="btnModificar" class="btn btn-primary" disabled>Modificar</button>
           <button type="button" id="btnEliminar" class="btn btn-danger">Eliminar</button>
+          {% if publicacion.estado_publicacion == 'borrador' and request.user == publicacion.user_ofertador %}
+            <button type="button" class="btn btn-success"
+                    onclick="Publicar('{{ publicacion.id_publicacion }}')">
+              Publicar
+            </button>
+          {% endif %}
+
         </div>
 
         <div class="mt-4 text-center">

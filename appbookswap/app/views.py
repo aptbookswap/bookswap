@@ -526,19 +526,35 @@ def marcar_completado(request, publicacion_id):
         if request.user != publicacion.user_ofertador and request.user != publicacion.user_comprador:
             return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
 
-        if publicacion.estado_publicacion != 'en_proceso':
-            return JsonResponse({'success': False, 'error': 'La publicación no está en proceso'}, status=400)
+        if publicacion.estado_publicacion != 'en_proceso' and publicacion.estado_publicacion != 'pendiente':
+            return JsonResponse({'success': False, 'error': 'La publicación no está en proceso o pendiente'}, status=400)
 
-        publicacion.estado_publicacion = 'completado'
+        # Marcar el ticket correspondiente
+        if request.user == publicacion.user_comprador:
+            publicacion.ticket_comprador = True
+        elif request.user == publicacion.user_ofertador:
+            publicacion.ticket_ofertador = True
+
+        # Cambiar estado según los tickets
+        if publicacion.ticket_comprador and publicacion.ticket_ofertador:
+            publicacion.estado_publicacion = 'completado'
+            publicacion.fecha_termino = timezone.now()
+        else:
+            publicacion.estado_publicacion = 'pendiente'
+
         publicacion.save()
 
-        return JsonResponse({'success': True})
+        return JsonResponse({'success': True, 'estado': publicacion.estado_publicacion})
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
     
 @login_required
 def detalle_publicacion_estado_view(request, id_publicacion):
     publicacion = get_object_or_404(Publicacion, id_publicacion=id_publicacion)
+
+    if publicacion.estado_publicacion == 'borrador':
+        return redirect('detalle_publicacion', id_publicacion=publicacion.id_publicacion)
 
     if request.user != publicacion.user_ofertador and request.user != publicacion.user_comprador:
         raise PermissionDenied("No tienes permiso para ver esta publicación.")
@@ -600,3 +616,35 @@ def obtener_promedios_valoraciones(usuario):
         'promedio_comprador': round(promedio_comprador or 0, 1),
         'promedio_ofertador': round(promedio_ofertador or 0, 1)
     }
+
+@login_required
+def marcar_ticket_completado(request, id_publicacion):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+    try:
+        publicacion = Publicacion.objects.get(id_publicacion=id_publicacion)
+    except Publicacion.DoesNotExist:
+        return JsonResponse({'error': 'Publicación no encontrada'}, status=404)
+
+    usuario = request.user
+    modificado = False
+
+    if usuario.uid == str(publicacion.user_comprador_id):
+        publicacion.ticket_comprador = True
+        modificado = True
+    elif usuario.uid == str(publicacion.user_ofertador_id):
+        publicacion.ticket_ofertador = True
+        modificado = True
+    else:
+        return JsonResponse({'error': 'No autorizado'}, status=403)
+
+    if modificado and publicacion.estado_publicacion == 'en_proceso':
+        publicacion.estado_publicacion = 'pendiente'
+
+    if publicacion.ticket_comprador and publicacion.ticket_ofertador:
+        publicacion.estado_publicacion = 'completado'
+        publicacion.fecha_termino = timezone.now()
+
+    publicacion.save()
+    return JsonResponse({'success': True, 'estado': publicacion.estado_publicacion})

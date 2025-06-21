@@ -180,6 +180,7 @@ class Publicacion(models.Model):
         ('en_proceso', 'En proceso'),
         ('completado', 'Completado'),
         ('cancelado', 'Cancelado'),
+        ('pendiente', 'Pendiente'),
     ]
 
     TRANSACCION_CHOICES = [
@@ -190,6 +191,8 @@ class Publicacion(models.Model):
     id_publicacion = models.AutoField(primary_key=True)
     fecha_publicacion = models.DateTimeField(auto_now_add=True)
     fecha_termino = models.DateTimeField(null=True, blank=True)
+    ticket_comprador = models.BooleanField(default=False)
+    ticket_ofertador = models.BooleanField(default=False)
     
     user_ofertador = models.ForeignKey(
         settings.AUTH_USER_MODEL,
