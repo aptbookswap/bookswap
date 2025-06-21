@@ -110,7 +110,25 @@
                 Marcar como Completado
               </button>
             {% endif %}
+          {% elif publicacion.estado_publicacion == 'pendiente' %}
+            {% if request.user == publicacion.user_ofertador and not publicacion.ticket_ofertador %}
+              <button class="btn btn-primary mb-2"
+                      onclick="abrirModalValorarComprador('{{ publicacion.id_publicacion }}', '{{ publicacion.user_comprador.uid }}')">
+                Confirmar Completado
+              </button>
+            {% elif request.user == publicacion.user_comprador and not publicacion.ticket_comprador %}
+              <button class="btn btn-primary mb-2"
+                      onclick="abrirModalValorarOfertador('{{ publicacion.id_publicacion }}', '{{ publicacion.user_ofertador.uid }}')">
+                Confirmar Completado
+              </button>
+            {% elif request.user == publicacion.user_comprador and publicacion.ticket_comprador %}
+              <p class="text-muted">Ya has confirmado tu parte. Esperando al ofertador.</p>
+            {% elif request.user == publicacion.user_ofertador and publicacion.ticket_ofertador %}
+              <p class="text-muted">Ya has confirmado tu parte. Esperando al comprador.</p>
+            {% endif %}
           {% endif %}
+
+
 
 
           {% if publicacion.estado_publicacion == 'cancelado' and publicacion.user_ofertador == request.user %}
@@ -132,9 +150,12 @@
 {% endblock %}
 
 {% block scripts %}
+
+
+<script src="{% static 'js/valoracion.js' %}"></script>
 <script src="{% static 'js/chat.js' %}"></script>
 <script src="{% static 'js/publicaciones.js' %}"></script>
-<script src="{% static 'js/valoracion.js' %}"></script>
+
 
 
 

@@ -141,10 +141,21 @@ async function marcarComoCompletado() {
             credentials: 'include'
         });
 
-        if (!response.ok) {
-            console.error("Error al marcar como completado");
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            if (data.estado === 'completado') {
+                alert("🎉 ¡La publicación ha sido marcada como COMPLETADA por ambos usuarios!");
+            } else if (data.estado === 'pendiente') {
+                alert("✅ Tu confirmación ha sido registrada. Esperando al otro usuario para completar la publicación.");
+            }
+            location.reload();
+        } else {
+            alert(data.error || "❌ Error al marcar como completado.");
         }
     } catch (err) {
         console.error("Error marcando como completado:", err);
+        alert("Error al comunicarse con el servidor.");
     }
 }
+

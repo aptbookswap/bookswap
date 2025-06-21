@@ -303,37 +303,7 @@ async function volver_a_disponible(publicacionId) {
     }
 }
 
-function marcarCompletado(publicacionId) {
-    console.log("Abrir modal para valoración. ID:", publicacionId);
 
-    const usuarioActivo = JSON.parse(localStorage.getItem('usuarioActivo'));
-    if (!usuarioActivo) {
-        alert("Usuario no autenticado.");
-        return;
-    }
-
-    const ofertadorInput = document.querySelector('[name="ofertador_id"]');
-    const compradorInput = document.querySelector('[name="comprador_id"]');
-
-    const ofertadorUid = ofertadorInput?.value;
-    const compradorUid = compradorInput?.value;
-    const ofertadorNombre = ofertadorInput?.dataset.nombre || 'ofertador';
-    const compradorNombre = compradorInput?.dataset.nombre || 'comprador';
-
-    if (usuarioActivo.uid === ofertadorUid) {
-        const modal = new bootstrap.Modal(document.getElementById('modalValorarComprador'));
-        document.getElementById('compradorId').value = compradorUid;
-        document.querySelector('#modalValorarComprador .modal-title').textContent = `Valorar a ${compradorNombre}`;
-        modal.show();
-    } else if (usuarioActivo.uid === compradorUid) {
-        const modal = new bootstrap.Modal(document.getElementById('modalValorarOfertador'));
-        document.getElementById('ofertadorId').value = ofertadorUid;
-        document.querySelector('#modalValorarOfertador .modal-title').textContent = `Valorar a ${ofertadorNombre}`;
-        modal.show();
-    } else {
-        alert("No tienes permiso para valorar esta publicación.");
-    }
-}
 
 
 async function Publicar(publicacionId) {
