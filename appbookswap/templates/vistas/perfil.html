@@ -93,10 +93,7 @@
             </div>
 
             <!-- Campo oculto para evitar errores si el JS lo requiere -->
-            <div class="col-12">
-              <label class="form-label">Ubicacion</label>
-              <input type="text" id="ubicacion" name="ubicacion" placeholder="Esta es tu ubicacion" class="form-control editable" disabled>
-            </div>
+            
 
             <!-- Campo visible de dirección -->
             <div class="col-12">
@@ -104,6 +101,10 @@
               <input type="text" id="direccion" placeholder="Dirección obtenida" class="form-control editable" readonly>
             </div>
 
+            <div class="form-group" id="ubimap" >
+                <div id="map" style="width: 100%; height: 300px; margin: 10px 0; border: 1px solid #ddd;"></div>
+                <input type="text" id="ubicacion" placeholder="Coordenadas (se completan automáticamente)" hidden>
+            </div>
 
           </div>
 

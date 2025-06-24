@@ -21,7 +21,6 @@
 <section id="mapa" class="container mb-5">
     <h2 class="text-center mb-4">Libros en tu zona</h2>
     <div class="map-container">
-        
         <div id="mapLoginOverlay" class="map-overlay login-required">
             <div class="map-content">
                 <i class="fas fa-lock fa-4x mb-3"></i>
@@ -34,7 +33,6 @@
             </div>
         </div>
 
-        
         <div id="realMap" style="display: none; width: 100%; height: 100%;">
             <div style="width: 100%; height: 100%; display: flex; flex-direction: column;">
                 <div class="bg-primary text-white p-2 d-flex justify-content-between align-items-center">
@@ -55,7 +53,7 @@
             </div>
         </div>
     </div>
-    
+
     <div id="usuarios-data" style="display: none;">
     [
     {% for usuario in usuarios_con_ubicacion %}
@@ -68,7 +66,6 @@
     ]
     </div>
 
-    
     <div id="usuario-actual-data"
         data-coords="{% if usuario_actual and usuario_actual.ubicacion %}{{ usuario_actual.ubicacion }}{% endif %}"
         data-username="{% if usuario_actual %}{{ usuario_actual.username }}{% endif %}"
@@ -81,29 +78,36 @@
         <h2 class="text-center mb-5">Cómo funciona BookSwap</h2>
         <div class="row text-center">
             <div class="col-md-4 mb-4">
-                <div class="feature-icon">
-                    <i class="fas fa-user-plus"></i>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h3>1. Regístrate</h3>
+                    <p>Crea tu perfil en minutos y configura tus preferencias literarias.</p>
                 </div>
-                <h3>1. Regístrate</h3>
-                <p>Crea tu perfil en minutos y configura tus preferencias literarias.</p>
             </div>
             <div class="col-md-4 mb-4">
-                <div class="feature-icon">
-                    <i class="fas fa-book-open"></i>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3>2. Sube tus libros</h3>
+                    <p>Agrega los libros que quieras intercambiar, vender o donar.</p>
                 </div>
-                <h3>2. Sube tus libros</h3>
-                <p>Agrega los libros que quieras intercambiar, vender o donar.</p>
             </div>
             <div class="col-md-4 mb-4">
-                <div class="feature-icon">
-                    <i class="fas fa-exchange-alt"></i>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <h3>3. Conecta</h3>
+                    <p>Encuentra otros lectores y coordina el intercambio.</p>
                 </div>
-                <h3>3. Conecta</h3>
-                <p>Encuentra otros lectores y coordina el intercambio.</p>
             </div>
         </div>
     </div>
 </section>
+
 {% endblock %}
 
 {% block scripts %}

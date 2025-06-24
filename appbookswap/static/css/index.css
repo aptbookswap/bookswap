@@ -1,4 +1,11 @@
-/* ESTILOS GENERALES Y HERO SECTION  */
+/* TIPOGRAFÍA GENERAL */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* HERO SECTION */
 .hero-section {
     background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
                 url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
@@ -14,14 +21,22 @@
 .hero-section h1 {
     font-size: 3rem;
     font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
 }
 
 .hero-section p {
     font-size: 1.25rem;
     margin-bottom: 20px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
 }
 
-/* CONTENEDOR DEL MAPA*/
+.btn-outline-light:hover {
+    background-color: #ffffff;
+    color: #0d6efd;
+    transition: all 0.3s ease;
+}
+
+/* CONTENEDOR DEL MAPA */
 .map-container {
     height: 500px;
     background-color: #f8f9fa;
@@ -43,6 +58,12 @@
     background-color: rgba(0,0,0,0.4);
     color: white;
     z-index: 10;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
 }
 
 .map-content {
@@ -54,6 +75,17 @@
     background-color: rgba(0,0,0,0.7);
 }
 
+#mapLoginBtn {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+#mapLoginBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+}
+
+/* MARCADORES DE USUARIOS */
 .user-marker-content {
     display: flex;
     align-items: center;
@@ -63,11 +95,11 @@
     border-radius: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     border: 1px solid #ddd;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 
 .user-marker-icon {
-    color: #0d6efd; /* Azul Bootstrap para coincidir con tu diseño */
+    color: #0d6efd;
     font-size: 14px;
     width: 18px;
     height: 18px;
@@ -86,7 +118,29 @@
     text-overflow: ellipsis;
 }
 
-/* ESTILOS PARA POPUPS DEL MAPA */
+.user-marker-container.active {
+    transform: scale(1.2);
+    z-index: 100;
+    animation: bounce 0.5s;
+}
+
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+    60% { transform: translateY(0); }
+    100% { transform: translateY(-2px); }
+}
+
+.user-marker-container.active .user-marker-content {
+    background-color: #0d6efd;
+}
+
+.user-marker-container.active .user-marker-icon,
+.user-marker-container.active .user-marker-name {
+    color: white;
+}
+
+/* POPUPS DEL MAPA */
 .mapboxgl-popup-content {
     padding: 0;
     border-radius: 8px;
@@ -111,12 +165,6 @@
     font-size: 12px;
 }
 
-.feature-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    color: #0d6efd;
-}
-
 .user-avatar {
     width: 30px;
     height: 30px;
@@ -125,6 +173,27 @@
     margin-right: 8px;
 }
 
+/* CÓMO FUNCIONA SECTION */
+.feature-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #0d6efd;
+}
+
+/* TOOLBAR MAPBOX */
 .mapboxgl-ctrl-top-right {
     top: 60px;
     right: 15px;
@@ -137,22 +206,16 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-/* EFECTO PARA MARCADOR ACTIVO */
-.user-marker-container.active {
-    transform: scale(1.2);
-    z-index: 100;
+/* FOOTER */
+footer {
+    font-size: 0.9rem;
+    color: #666;
+    padding: 20px 0;
+    background: #f8f9fa;
+    margin-top: 50px;
 }
 
-.user-marker-container.active .user-marker-content {
-    background-color: #0d6efd; /* Azul Bootstrap */
-}
-
-.user-marker-container.active .user-marker-icon,
-.user-marker-container.active .user-marker-name {
-    color: white;
-}
-
-/* 📱 RESPONSIVE */
+/* RESPONSIVE */
 @media (max-width: 768px) {
     .hero-section {
         padding: 80px 0;
@@ -169,8 +232,6 @@
     .map-content {
         padding: 20px;
     }
-    
-    /* Ajustes para marcadores en móviles */
     .user-marker-name {
         max-width: 70px;
         font-size: 11px;
@@ -190,8 +251,6 @@
     .map-container {
         height: 300px;
     }
-    
-    /* Ajustes adicionales para móviles pequeños */
     .user-marker-content {
         padding: 2px 5px 2px 3px;
     }
