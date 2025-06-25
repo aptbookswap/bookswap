@@ -602,12 +602,14 @@ def publicaciones_comprador_view(request):
     en_proceso = publicaciones.filter(estado_publicacion='en_proceso')
     completadas = publicaciones.filter(estado_publicacion='completado')
     canceladas = publicaciones.filter(estado_publicacion='cancelado')
+    pendiente = publicaciones.filter(estado_publicacion='pendiente')
 
     return render(request, 'vistas/publicaciones_comprador.html', {
         'en_espera': en_espera,
         'en_proceso': en_proceso,
         'completadas': completadas,
         'canceladas': canceladas,
+        'pendiente': pendiente
     })
 def obtener_promedios_valoraciones(usuario):
     promedio_comprador = ValoracionAComprador.objects.filter(comprador=usuario.uid).aggregate(prom=Avg('puntuacion'))['prom']

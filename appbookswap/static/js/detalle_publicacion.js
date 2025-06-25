@@ -31,8 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
   checkbox.addEventListener('change', function () {
     const enabled = this.checked;
     formElements.forEach(e => {
-      if (['publicacion_id', 'estado_publicacion'].includes(e.id)) return;
+      if (!['tipo_transaccion', 'valor', 'descripcion'].includes(e.id)) return;
       e.disabled = !enabled;
+
     });
     btnModificar.disabled = !enabled;
   });

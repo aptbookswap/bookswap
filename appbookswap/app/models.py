@@ -7,22 +7,27 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
 
-# Ruta de subida para imágenes de perfil
+#------------------------------------
+# Utilidad: Ruta de subida para perfiles
+#------------------------------------
 def upload_to(instance, filename):
     return f'uploads/perfiles/{filename}'
 
-# Modelo de usuario extendido desde AbstractUser
+
+#------------------------------------
+# Modelo de usuario personalizado
+#------------------------------------
 class Usuario(AbstractUser):
-    uid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)  
+    uid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     img_perfil = models.ImageField(
         upload_to='perfiles/',
         null=True,
         blank=True,
-        default='img/perfil.jpg'  
+        default='img/perfil.jpg'
     )
-    numero = models.CharField(max_length=20, null=True, blank=True)  
-    fecha_nacimiento = models.DateField(null=True, blank=True)  
-    preferencias = models.CharField(  
+    numero = models.CharField(max_length=20, null=True, blank=True)
+    fecha_nacimiento = models.DateField(null=True, blank=True)
+    preferencias = models.CharField(
         max_length=50,
         blank=True,
         default="",
@@ -37,52 +42,59 @@ class Usuario(AbstractUser):
             ('otro', 'otro'),
         ]
     )
-    valoracion_comprador = models.FloatField(null=True, blank=True)  
-    valoracion_ofertador = models.FloatField(null=True, blank=True)  
-    ubicacion = models.CharField(max_length=100)  
+    valoracion_comprador = models.FloatField(null=True, blank=True)
+    valoracion_ofertador = models.FloatField(null=True, blank=True)
+    ubicacion = models.CharField(max_length=100)
     direccion = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.username
 
+
 User = get_user_model()
 
-# Modelo de mensaje entre usuarios (MODIFICADO)
+
+#------------------------------------
+# Modelo de mensajes entre usuarios
+#------------------------------------
 class Message(models.Model):
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sent_messages', on_delete=models.CASCADE) 
-    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='received_messages', on_delete=models.CASCADE)  
-    content = models.TextField() 
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sent_messages', on_delete=models.CASCADE)
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='received_messages', on_delete=models.CASCADE)
+    content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
-    conversation_notified = models.BooleanField(default=False)  # Nuevo campo
+    conversation_notified = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=['sender', 'recipient', 'conversation_notified'],
                 name='unique_conversation_notification',
-                condition=models.Q(conversation_notified=True))
+                condition=models.Q(conversation_notified=True)
+            )
         ]
 
     def __str__(self):
         return f'{self.sender.username} to {self.recipient.username}: {self.content}'
 
-# Señal MODIFICADA para notificación única por conversación
+
+#------------------------------------
+# Señal para notificar nuevas conversaciones
+#------------------------------------
 @receiver(post_save, sender=Message)
 def notify_new_conversation(sender, instance, created, **kwargs):
     if created and not instance.conversation_notified:
-        # Verificar si ya existe notificación para esta combinación de usuarios
         existing_notification = Message.objects.filter(
             sender=instance.sender,
             recipient=instance.recipient,
             conversation_notified=True
         ).exists()
-        
+
         if not existing_notification:
             subject = f"💬 ¡{instance.sender.first_name} quiere contactarte en BookSwap!"
             message = f"""
             Hola {instance.recipient.first_name},
             
-            {instance.sender.first_name} Intenta contactarse contigo, revisa tu chat en Bookswap
+            {instance.sender.first_name} intenta contactarse contigo. Revisa tu chat en BookSwap.
             
             ¡Gracias por usar BookSwap!
             (No responder este mensaje)
@@ -97,13 +109,16 @@ def notify_new_conversation(sender, instance, created, **kwargs):
             instance.conversation_notified = True
             instance.save()
 
-# Modelo de libro ofrecido por el usuario
+
+#------------------------------------
+# Modelo de libro ofrecido
+#------------------------------------
 class Libro(models.Model):
-    id_libro = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)  
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  
-    titulo = models.CharField(max_length=255)  
-    autor = models.CharField(max_length=255)  
-    estado = models.CharField(  
+    id_libro = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    titulo = models.CharField(max_length=255)
+    autor = models.CharField(max_length=255)
+    estado = models.CharField(
         max_length=50,
         choices=[
             ('Perfecto', 'Perfecto'),
@@ -112,22 +127,28 @@ class Libro(models.Model):
             ('En malas condiciones', 'En malas condiciones')
         ]
     )
-    genero = models.CharField(max_length=255, blank=True, default="") 
-    paginas = models.PositiveIntegerField()  
-    cantidad = models.PositiveIntegerField()  
+    genero = models.CharField(max_length=255, blank=True, default="")
+    paginas = models.PositiveIntegerField()
+    cantidad = models.PositiveIntegerField()
 
     def __str__(self):
         return f'{self.titulo} - {self.autor}'
 
-# Modelo de imagen asociada a un libro
+
+#------------------------------------
+# Imagenes asociadas a libros
+#------------------------------------
 class ImagenLibro(models.Model):
-    libro = models.ForeignKey(Libro, related_name='imagenes', on_delete=models.CASCADE)  
-    imagen = models.ImageField(upload_to='libros/')  
+    libro = models.ForeignKey(Libro, related_name='imagenes', on_delete=models.CASCADE)
+    imagen = models.ImageField(upload_to='libros/')
 
     def __str__(self):
         return f'Imagen de {self.libro.titulo}'
 
-# Modelo tabla valoraciones Comprador
+
+#------------------------------------
+# Valoración hacia el comprador
+#------------------------------------
 class ValoracionAComprador(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     ofertador = models.ForeignKey(
@@ -149,7 +170,10 @@ class ValoracionAComprador(models.Model):
     def __str__(self):
         return f'{self.ofertador.username} → {self.comprador.username} ({self.puntuacion} ⭐)'
 
-# Modelo tabla valoraciones Ofertador
+
+#------------------------------------
+# Valoración hacia el ofertador
+#------------------------------------
 class ValoracionAOfertador(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     comprador = models.ForeignKey(
@@ -171,7 +195,10 @@ class ValoracionAOfertador(models.Model):
     def __str__(self):
         return f'{self.comprador.username} → {self.ofertador.username} ({self.puntuacion} ⭐)'
 
-# Nuevo modelo para publicaciones
+
+#------------------------------------
+# Publicaciones de libros
+#------------------------------------
 class Publicacion(models.Model):
     ESTADO_CHOICES = [
         ('borrador', 'Borrador'),
@@ -193,7 +220,7 @@ class Publicacion(models.Model):
     fecha_termino = models.DateTimeField(null=True, blank=True)
     ticket_comprador = models.BooleanField(default=False)
     ticket_ofertador = models.BooleanField(default=False)
-    
+
     user_ofertador = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -201,7 +228,7 @@ class Publicacion(models.Model):
         to_field='uid'
     )
     libro = models.ForeignKey(
-        'Libro',
+        Libro,
         on_delete=models.CASCADE,
         related_name='publicaciones'
     )
@@ -221,7 +248,10 @@ class Publicacion(models.Model):
     def __str__(self):
         return f"{self.tipo_transaccion.title()} - {self.libro.titulo} ({self.estado_publicacion})"
 
-# Modelo para imágenes de la publicación
+
+#------------------------------------
+# Imágenes asociadas a publicaciones
+#------------------------------------
 class ImagenPublicacion(models.Model):
     publicacion = models.ForeignKey(Publicacion, on_delete=models.CASCADE, related_name='imagenes')
     imagen = models.ImageField(upload_to='publicaciones/')

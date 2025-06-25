@@ -6,6 +6,8 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
 <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+
 {% endblock %}
 
 {% block content %}
@@ -54,10 +56,13 @@
             <p class="mb-1"><strong>Nombre:</strong> {{ publicacion.user_comprador.first_name }}</p>
             <p class="mb-1"><strong>Email:</strong> {{ publicacion.user_comprador.email }}</p>
             <p class="mb-1"><strong>Teléfono:</strong> {{ publicacion.user_comprador.numero }}</p>
-            <p class="mb-1"><strong>Ubicación:</strong> {{ publicacion.user_comprador.ubicacion }}</p>
+            <p class="mb-1"><strong>Dirección:</strong> {{ publicacion.user_comprador.direccion|default:"No especificada" }}</p>
             <p class="mb-1"><strong>Preferencia:</strong> {{ publicacion.user_comprador.preferencias }}</p>
             <p class="mb-1"><strong>⭐ Valoración como comprador:</strong> {{ promedios_comprador.promedio_comprador|default:"Sin valoraciones" }}</p>
             <p class="mb-1"><strong>⭐ Valoración como ofertador:</strong> {{ promedios_ofertador.promedio_ofertador|default:"Sin valoraciones" }}</p>
+
+            <div id="map" style="height: 300px; border-radius: 10px; margin-top: 20px;"></div>
+
 
             {% if request.user == publicacion.user_comprador %}
               <button class="btn btn-outline-dark btn-sm"
@@ -150,14 +155,11 @@
 {% endblock %}
 
 {% block scripts %}
-
-
-<script src="{% static 'js/valoracion.js' %}"></script>
-<script src="{% static 'js/chat.js' %}"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<script>
+  const ubicacionComprador = "{{ publicacion.user_comprador.ubicacion|default:'' }}";
+</script>
 <script src="{% static 'js/publicaciones.js' %}"></script>
-
-
-
-
+<script src="{% static 'js/chat.js' %}"></script>
 
 {% endblock %}

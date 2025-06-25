@@ -152,6 +152,37 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    const imagenesInput = document.getElementById('imagenes');
+    const previewContainer = document.getElementById('previewImagenes');
+
+    if (imagenesInput) {
+        imagenesInput.addEventListener('change', function () {
+            previewContainer.innerHTML = ''; // Limpia previews anteriores
+
+            const archivos = imagenesInput.files;
+            if (archivos.length > 3) {
+                alert("Solo puedes subir hasta 3 imágenes.");
+                imagenesInput.value = "";  // Resetea el input
+                return;
+            }
+
+            Array.from(archivos).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.classList.add('img-thumbnail', 'm-1');
+                    img.style.width = "100px";
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+    }
+});
+
+
 function verDetallePublicacion(id) {
     publicacionActivaId = id;
 
@@ -307,27 +338,245 @@ async function volver_a_disponible(publicacionId) {
 
 
 async function Publicar(publicacionId) {
-    const confirmar = confirm("¿Deseas publicar esta publicación?");
-    if (!confirmar) return;
+  const confirmar = confirm("¿Deseas publicar esta publicación?");
+  if (!confirmar) return;
+
+  try {
+    const response = await fetch(`/api/publicacion/${publicacionId}/Publicar/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCSRFToken()
+      }
+    });
+
+    const data = await response.json();
+    if (response.ok && data.success) {
+      alert("La publicación está disponible.");
+      // Redirección a Mis publicaciones
+      window.location.href = '/publicaciones/';
+    } else {
+      alert(data.error || "No se pudo actualizar la publicación.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error al actualizar el estado.");
+  }
+}
+
+
+// Valoraciones
+
+// Mostrar modal de valoración al ofertador
+function abrirModalValorarOfertador(idPublicacion, uidOfertador) {
+    publicacionActivaId = idPublicacion;
+    const modal = new bootstrap.Modal(document.getElementById('modalValorarOfertador'));
+    document.querySelector('#modalValorarOfertador input[name="publicacion_id"]').value = idPublicacion;
+    document.querySelector('#modalValorarOfertador input[name="ofertador_id"]').value = uidOfertador;
+    modal.show();
+}
+
+// Mostrar modal de valoración al comprador
+function abrirModalValorarComprador(idPublicacion, uidComprador) {
+    publicacionActivaId = idPublicacion;
+    const modal = new bootstrap.Modal(document.getElementById('modalValorarComprador'));
+    document.querySelector('#modalValorarComprador input[name="publicacion_id"]').value = idPublicacion;
+    document.querySelector('#modalValorarComprador input[name="comprador_id"]').value = uidComprador;
+    modal.show();
+}
+
+// Enviar valoración al ofertador
+document.getElementById('formValorarOfertador')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const ofertadorId = document.getElementById('ofertadorId').value;
+    const rating = document.querySelector('#formValorarOfertador input[name="rating"]:checked')?.value;
+    const comentario = document.getElementById('comentario_ofertador').value;
+
+    if (!rating || !comentario) {
+        alert("Por favor completa la puntuación y el comentario.");
+        return;
+    }
 
     try {
-        const response = await fetch(`/api/publicacion/${publicacionId}/Publicar/`, {
+        const res = await fetch('/api/valorar/ofertador/', {
             method: 'POST',
             headers: {
-                'X-CSRFToken': getCSRFToken()
-            }
+                'X-CSRFToken': getCSRFToken(),
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                ofertador_id: ofertadorId,
+                rating: rating,
+                comentario: comentario
+            })
         });
 
-        const data = await response.json();
-        if (response.ok && data.success) {
-            alert("La publicación esta disponible.");
+        if (res.ok) {
+            await marcarComoCompletado();
+            alert("¡Valoración al ofertador enviada!");
+            bootstrap.Modal.getInstance(document.getElementById('modalValorarOfertador')).hide();
+            this.reset();
             location.reload();
         } else {
-            alert(data.error || "No se pudo actualizar la publicación.");
+            const errorData = await res.json();
+            alert(errorData.error || "Error al enviar valoración.");
         }
     } catch (err) {
         console.error(err);
-        alert("Error al actualizar el estado.");
+        alert("Ocurrió un error al enviar la valoración.");
+    }
+});
+
+// Enviar valoración al comprador
+document.getElementById('formValorarComprador')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const compradorId = document.getElementById('compradorId').value;
+    const rating = document.querySelector('#formValorarComprador input[name="rating"]:checked')?.value;
+    const comentario = document.getElementById('comentario_comprador').value;
+
+    if (!rating || !comentario) {
+        alert("Por favor completa la puntuación y el comentario.");
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/valorar/comprador/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                comprador_id: compradorId,
+                rating: rating,
+                comentario: comentario
+            })
+        });
+
+        if (res.ok) {
+            await marcarComoCompletado();
+            alert("¡Valoración al comprador enviada!");
+            bootstrap.Modal.getInstance(document.getElementById('modalValorarComprador')).hide();
+            this.reset();
+            location.reload();
+        } else {
+            const errorData = await res.json();
+            alert(errorData.error || "Error al enviar valoración.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Ocurrió un error al enviar la valoración.");
+    }
+});
+
+// Marcar publicación como completada
+async function marcarComoCompletado() {
+    if (!publicacionActivaId) {
+        console.warn("No hay ID de publicación activa.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/publicacion/${publicacionActivaId}/marcar-completado/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            },
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            if (data.estado === 'completado') {
+                alert("🎉 ¡La publicación ha sido marcada como COMPLETADA por ambos usuarios!");
+            } else if (data.estado === 'pendiente') {
+                alert("✅ Tu confirmación ha sido registrada. Esperando al otro usuario para completar la publicación.");
+            }
+            location.reload();
+        } else {
+            alert(data.error || "❌ Error al marcar como completado.");
+        }
+    } catch (err) {
+        console.error("Error marcando como completado:", err);
+        alert("Error al comunicarse con el servidor.");
     }
 }
+document.addEventListener('DOMContentLoaded', function () {
+  const ubicacionInput = document.getElementById('ubicacion');
 
+  if (ubicacionInput && ubicacionInput.value && ubicacionInput.value.includes(',')) {
+    const [lng, lat] = ubicacionInput.value.split(',').map(parseFloat);
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
+
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [lng, lat],
+      zoom: 13
+    });
+
+    // Marcador de la ubicación del usuario (ofertador)
+    new mapboxgl.Marker({ color: '#FF0000' })
+      .setLngLat([lng, lat])
+      .setPopup(new mapboxgl.Popup().setText("Ubicación del usuario"))
+      .addTo(map);
+
+    // Obtener y marcar ubicación del visitante (tú)
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLng = position.coords.longitude;
+          const userLat = position.coords.latitude;
+
+          new mapboxgl.Marker({ color: '#0000FF' })
+            .setLngLat([userLng, userLat])
+            .setPopup(new mapboxgl.Popup().setText("Tú estás aquí"))
+            .addTo(map);
+        },
+        (error) => {
+          console.warn("No se pudo obtener tu ubicación:", error);
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+      );
+    }
+  }
+});
+
+mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (!ubicacionComprador || !ubicacionComprador.includes(",")) return;
+
+    const coords = ubicacionComprador.split(",").map(c => parseFloat(c.trim()));
+    if (coords.length !== 2 || isNaN(coords[0]) || isNaN(coords[1])) return;
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: coords,
+        zoom: 13
+    });
+
+    new mapboxgl.Marker({ color: 'red' })
+        .setLngLat(coords)
+        .setPopup(new mapboxgl.Popup().setText("Ubicación del comprador"))
+        .addTo(map);
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const userCoords = [position.coords.longitude, position.coords.latitude];
+                new mapboxgl.Marker({ color: 'blue' })
+                    .setLngLat(userCoords)
+                    .setPopup(new mapboxgl.Popup().setText("Tu ubicación"))
+                    .addTo(map);
+            },
+            (error) => console.warn("Ubicación no disponible:", error)
+        );
+    }
+});
