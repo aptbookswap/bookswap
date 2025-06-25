@@ -1,4 +1,10 @@
-// Obtiene el valor de una cookie por su nombre
+//==================================================
+// Lógica para editar, ver y eliminar libros (modal)
+//==================================================
+
+//-------------------------------------
+// Obtener token CSRF desde cookie o meta
+//-------------------------------------
 function getCSRFToken() {
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
@@ -18,8 +24,10 @@ function getCSRFToken() {
     return null;
 }
 
+//-------------------------------------
+// Redirigir si no hay usuario logueado
+//-------------------------------------
 document.addEventListener('DOMContentLoaded', function () {
-    // Verifica si hay un usuario logueado
     const usuario = JSON.parse(localStorage.getItem('usuarioActivo'));
     if (!usuario || !usuario.uid) {
         alert("Debes iniciar sesión para ver esta página.");
@@ -28,17 +36,23 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+//-------------------------------------
 // Variables globales
+//-------------------------------------
 let libroActivoId = null;
 let generosSeleccionados = [];
 
-// Carga los géneros desde una cadena separada por comas
+//-------------------------------------
+// Cargar géneros desde string separado por comas
+//-------------------------------------
 function cargarGenerosLibro(generosStr) {
     generosSeleccionados = generosStr.split(',').map(p => p.trim()).filter(Boolean);
     actualizarTags();
 }
 
-// Actualiza visualmente los tags de géneros en el formulario
+//-------------------------------------
+// Mostrar géneros seleccionados como tags visuales
+//-------------------------------------
 function actualizarTags() {
     const generoTags = document.getElementById('generoTagsEdit');
     const generoInput = document.getElementById('generoEdit');
@@ -54,7 +68,9 @@ function actualizarTags() {
     generoInput.value = generosSeleccionados.join(',');
 }
 
-// Carga los detalles del libro en el modal
+//-------------------------------------
+// Cargar los datos de un libro en el modal
+//-------------------------------------
 function seleccionarLibro(id) {
     libroActivoId = id;
 
@@ -93,13 +109,14 @@ function seleccionarLibro(id) {
         });
 }
 
-// Lógica al cargar la página
+//-------------------------------------
+// Lógica de edición y botones del formulario
+//-------------------------------------
 document.addEventListener('DOMContentLoaded', function () {
     const generoDropdown = document.getElementById('generoDropdownEdit');
     const generoTags = document.getElementById('generoTagsEdit');
-    const generoInput = document.getElementById('generoEdit');
 
-    // Manejo de selección de género
+    // Agregar género desde dropdown
     generoDropdown.addEventListener('change', function () {
         const selected = this.value;
         if (selected && !generosSeleccionados.includes(selected)) {
@@ -109,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
         this.value = '';
     });
 
-    // Manejo de eliminación de tags
+    // Quitar género al hacer clic en "×"
     generoTags.addEventListener('click', function (e) {
         if (e.target.classList.contains('remove-tag')) {
             const value = e.target.getAttribute('data-value');
@@ -118,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Activar/desactivar inputs al marcar "Editar"
+    // Habilitar edición
     const toggleEdit = document.getElementById('toggleEdit');
     if (toggleEdit) {
         toggleEdit.addEventListener('change', function () {
@@ -131,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Confirmar modificación de libro
+    // Guardar cambios del libro (PUT)
     const confirmarGuardarBtn = document.getElementById('confirmarGuardarBtn');
     confirmarGuardarBtn.addEventListener('click', () => {
         if (!libroActivoId) return;
@@ -164,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(err => console.error("Error modificando libro:", err));
     });
 
-    // Confirmar eliminación de libro
+    // Eliminar libro (DELETE)
     const confirmarEliminarBtn = document.getElementById('confirmarEliminarBtn');
     confirmarEliminarBtn.addEventListener('click', () => {
         if (!libroActivoId) return;
@@ -172,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`/api/libro/${libroActivoId}/`, {
             method: 'DELETE',
             headers: {
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCSRFToken()
             }
         })
         .then(res => {
