@@ -13,6 +13,9 @@
 {% block content %}
 <div class="container my-5">
   <h2 class="text-center mb-4">Estado de la Publicación</h2>
+  <a href="{% url 'index' %}" class="btn-back" title="Volver al inicio">
+        <i class="fas fa-arrow-left"></i>
+    </a>
 
   <div class="card shadow p-4">
     <div class="row">
@@ -58,11 +61,31 @@
             <p class="mb-1"><strong>Teléfono:</strong> {{ publicacion.user_comprador.numero }}</p>
             <p class="mb-1"><strong>Dirección:</strong> {{ publicacion.user_comprador.direccion|default:"No especificada" }}</p>
             <p class="mb-1"><strong>Preferencia:</strong> {{ publicacion.user_comprador.preferencias }}</p>
-            <p class="mb-1"><strong>⭐ Valoración como comprador:</strong> {{ promedios_comprador.promedio_comprador|default:"Sin valoraciones" }}</p>
-            <p class="mb-1"><strong>⭐ Valoración como ofertador:</strong> {{ promedios_ofertador.promedio_ofertador|default:"Sin valoraciones" }}</p>
+
+                      <!-- BLOQUE NUEVO DE VALORACIONES EN FILA -->
+          <div class="mt-4 text-center">
+            <h6 class="fw-bold mb-3">⭐ Valoraciones</h6>
+            <div class="d-flex justify-content-center gap-5 flex-wrap">
+              
+              <div>
+                <strong>Como Ofertador</strong><br>
+                <div id="rating-ofertador" class="text-warning fs-5" data-rating="{{ promedio_ofertador|default:0 }}">★★★★★</div>
+                <small id="rating-ofertador-text">{{ promedio_ofertador|default:"Sin valoraciones" }}</small>
+              </div>
+
+              <div>
+                <strong>Como Comprador</strong><br>
+                <div id="rating-comprador" class="text-warning fs-5" data-rating="{{ promedio_comprador|default:0 }}">★★★★★</div>
+                <small id="rating-comprador-text">{{ promedio_comprador|default:"Sin valoraciones" }}</small>
+              </div>
+
+            </div>
+          </div>
+         
+
+            <!-- FIN BLOQUE NUEVO -->
 
             <div id="map" style="height: 300px; border-radius: 10px; margin-top: 20px;"></div>
-
 
             {% if request.user == publicacion.user_comprador %}
               <button class="btn btn-outline-dark btn-sm"
@@ -75,11 +98,9 @@
                 <i class="fa fa-comment"></i> Chatear con el comprador
               </button>
             {% endif %}
-
-
-
           </div>
         </div>
+
         {% else %}
         <p class="text-muted text-center">Aún no hay comprador asignado.</p>
         {% endif %}
@@ -94,7 +115,7 @@
           </button>
           {% endif %}
 
-          {% if publicacion.estado_publicacion == 'en_espera' or publicacion.estado_publicacion == 'en_proceso' %}
+          {% if publicacion.estado_publicacion == 'en_espera' or publicacion.estado_publicacion == 'en_proceso' or publicacion.estado_publicacion == 'disponible'%}
             {% if request.user == publicacion.user_ofertador or request.user == publicacion.user_comprador %}
             <button class="btn btn-danger mb-2"
                     onclick="cancelarPublicacion('{{ publicacion.id_publicacion }}')">

@@ -8,14 +8,12 @@
 <link rel="stylesheet" href="{% static 'css/chat.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
-
 {% endblock %}
 
 {% block content %}
 <div class="container my-5">
   <div class="row g-4">
-
-    
+    <!-- Columna de usuario -->
     <div class="col-md-4">
       <div class="card shadow-sm p-4">
         <div class="text-center mb-4">
@@ -27,41 +25,35 @@
           <li class="list-group-item"><strong>Número:</strong> {{ usuario.numero }}</li>
           <li class="list-group-item"><strong>Fecha nacimiento:</strong> {{ usuario.fecha_nacimiento }}</li>
           <li class="list-group-item"><strong>Preferencias:</strong> {{ usuario.preferencias }}</li>
-          <li class="list-group-item"><strong>Ubicación:</strong> {{ usuario.ubicacion }}</li>
+          <li class="list-group-item"><strong>Direccion:</strong> {{ usuario.direccion }}</li>
+          <li class="list-group-item">
+            <strong>Ubicación en el mapa:</strong>
+            <div id="map" style="width: 100%; height: 250px; margin-top: 10px; border-radius: 10px; border: 1px solid #ccc;"></div>
+            <input type="hidden" id="ubicacion" value="{{ usuario.ubicacion }}">
+          </li>
         </ul>
-          <!-- Contenedor para el mapa -->
-        <li class="list-group-item">
-          <strong>Ubicación en el mapa:</strong>
-          <div id="map" style="width: 100%; height: 250px; margin-top: 10px; border-radius: 10px; border: 1px solid #ccc;"></div>
-          <input type="hidden" id="ubicacion" value="{{ usuario.ubicacion }}">
-        </li>
-
-
-       <button class="btn btn-outline-dark btn-sm" onclick="abrirChatModal('{{ usuario.uid }}', '{{ usuario.first_name }}')">
-        <i class="fa fa-comment"></i> Chatear
-      </button>
-
-
-
+        <button class="btn btn-outline-dark btn-sm mt-3 w-100" onclick="abrirChatModal('{{ usuario.uid }}', '{{ usuario.first_name }}')">
+          <i class="fa fa-comment"></i> Chatear
+        </button>
         <div class="mt-4 text-center">
           <h6 class="fw-bold mb-2">⭐ Valoraciones</h6>
-
-          <div class="mb-2">
-            <strong>Como Ofertador</strong><br>
-            <div id="rating-ofertador" class="text-warning fs-5">★★★★★</div>
-            <small id="rating-ofertador-text">{{ promedio_ofertador|default:"Sin valoraciones" }}</small>
-          </div>
-
-          <div>
-            <strong>Como Comprador</strong><br>
-            <div id="rating-comprador" class="text-warning fs-5">★★★★★</div>
-            <small id="rating-comprador-text">{{ promedio_comprador|default:"Sin valoraciones" }}</small>
+          <div class="d-flex justify-content-center gap-5 flex-wrap">
+            <div>
+              <strong>Como Ofertador</strong><br>
+              <div id="rating-ofertador" class="text-warning fs-5" data-rating="{{ promedio_ofertador|default:0 }}">★★★★★</div>
+              <small id="rating-ofertador-text">{{ promedio_ofertador|default:"Sin valoraciones" }}</small>
+            </div>
+            <div>
+              <strong>Como Comprador</strong><br>
+              <div id="rating-comprador" class="text-warning fs-5" data-rating="{{ promedio_comprador|default:0 }}">★★★★★</div>
+              <small id="rating-comprador-text">{{ promedio_comprador|default:"Sin valoraciones" }}</small>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    
+    <!-- Columna de publicaciones -->
     <div class="col-md-8">
       <h2 class="mb-4">Publicaciones de {{ usuario.first_name }}</h2>
       <div class="row" id="publicacionesRow">
@@ -84,9 +76,8 @@
               <button class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="modal"
                 data-bs-target="#detallePublicacionModal"
                 onclick="verDetallePublicacion('{{ publicacion.id_publicacion }}')">
-              Detalles
-            </button>
-
+                Detalles
+              </button>
             </div>
           </div>
         </div>
@@ -98,6 +89,7 @@
   </div>
 </div>
 
+<<!-- Modal Detalle Publicación -->
 <div class="modal fade" id="detallePublicacionModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
@@ -106,6 +98,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
+        <!-- Imagen principal del libro -->
+        <div class="text-center mb-3">
+          <img id="detalleImagenPrincipal" src="" alt="Imagen del libro" class="img-fluid rounded" style="max-height: 250px; max-width: 100%;">
+        </div>
         <h5 id="detalleTituloLibro"></h5>
         <p><strong>Autor:</strong> <span id="detalleAutor"></span></p>
         <p><strong>Estado:</strong> <span id="detalleEstadoLibro"></span></p>
@@ -127,7 +123,6 @@
   </div>
 </div>
 
-
 {% include "vistas/partials/modal_valorar_ofertador.html" %}
 {% include "vistas/partials/modal_chat.html" %}
 {% endblock %}
@@ -136,5 +131,5 @@
 <script src="{% static 'js/chat.js' %}"></script>
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
 <script src="{% static 'js/publicaciones.js' %}"></script>
-
+<script src="{% static 'js/valoracion.js' %}"></script>
 {% endblock %}

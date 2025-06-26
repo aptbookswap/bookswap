@@ -1,3 +1,4 @@
+// ===================== CSRF Token =====================
 function getCSRFToken() {
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
@@ -8,17 +9,17 @@ function getCSRFToken() {
             }
         }
     }
-
     const meta = document.querySelector('meta[name="csrf-token"]');
     if (meta) {
         return meta.getAttribute('content');
     }
-
     return null;
 }
 
+// ===================== Variables Globales =====================
 let publicacionActivaId = null;
 
+// ===================== Gestión de Publicaciones =====================
 function seleccionarPublicacion(id) {
     publicacionActivaId = id;
     fetch(`/api/publicacion/${id}/`)
@@ -32,7 +33,6 @@ function seleccionarPublicacion(id) {
             document.getElementById('detalleTipo').value = data.tipo_transaccion || '';
             document.getElementById('detalleEstado').value = data.estado_publicacion || '';
             document.getElementById('detalleDescripcion').value = data.descripcion || '';
-
             const imgPreview = document.getElementById('detalleImagenes');
             imgPreview.innerHTML = '';
             if (data.imagenes && data.imagenes.length > 0) {
@@ -51,10 +51,53 @@ function seleccionarPublicacion(id) {
         });
 }
 
+// ...existing code...
+function verDetallePublicacion(id) {
+    publicacionActivaId = id;
+    fetch(`/api/publicacion/${id}/`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('detalleTituloLibro').textContent = data.libro.titulo;
+            document.getElementById('detalleAutor').textContent = data.libro.autor;
+            document.getElementById('detalleEstadoLibro').textContent = data.libro.estado;
+            document.getElementById('detalleGenero').textContent = data.libro.genero;
+            document.getElementById('detallePaginas').textContent = data.libro.paginas;
+            document.getElementById('detalleCantidad').textContent = data.libro.cantidad;
+            document.getElementById('detalleTipo').textContent = data.tipo_transaccion;
+            document.getElementById('detalleValor').textContent = data.valor;
+            document.getElementById('detalleEstado').textContent = data.estado_publicacion;
+            document.getElementById('detalleDescripcion').textContent = data.descripcion;
+            // Mostrar imagen principal
+            const imgPrincipal = document.getElementById('detalleImagenPrincipal');
+            if (data.imagenes && data.imagenes.length > 0) {
+                imgPrincipal.src = data.imagenes[0].imagen;
+                imgPrincipal.style.display = '';
+            } else {
+                imgPrincipal.src = '';
+                imgPrincipal.style.display = 'none';
+            }
+            // Galería de imágenes
+            const imgContainer = document.getElementById('detalleImagenes');
+            imgContainer.innerHTML = '';
+            (data.imagenes || []).forEach(img => {
+                const imgTag = document.createElement('img');
+                imgTag.src = img.imagen;
+                imgTag.className = "img-thumbnail m-1";
+                imgTag.style.width = "100px";
+                imgContainer.appendChild(imgTag);
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error al cargar detalles de la publicación.");
+        });
+}
+//
+
+// ===================== CRUD de Publicaciones =====================
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('confirmarEliminarPublicacionBtn')?.addEventListener('click', () => {
         if (!publicacionActivaId) return;
-
         fetch(`/api/publicacion/${publicacionActivaId}/`, {
             method: 'DELETE',
             headers: { 'X-CSRFToken': getCSRFToken() },
@@ -71,10 +114,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// ===================== Formulario de Creación de Publicación =====================
 document.addEventListener('DOMContentLoaded', function () {
     const params = new URLSearchParams(window.location.search);
     const libroId = params.get('libro_id');
-
     if (libroId && document.getElementById('formCrearPublicacion')) {
         fetch(`/api/libro/${libroId}/`)
             .then(res => {
@@ -99,34 +142,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('formCrearPublicacion');
-
     if (form) {
         form.addEventListener('submit', async function (e) {
             e.preventDefault();
-
             const libroId = document.getElementById('libro_id').value;
             const tipo = document.getElementById('tipo_transaccion').value;
             const valor = document.getElementById('valor').value || 0;
             const descripcion = document.getElementById('descripcion').value;
             const imagenesInput = document.getElementById('imagenes');
             const imagenes = imagenesInput.files;
-
             if (!libroId || !tipo || !descripcion) {
                 alert("Completa todos los campos obligatorios.");
                 return;
             }
-
             const formData = new FormData();
             formData.append('libro', libroId);
             formData.append('tipo_transaccion', tipo);
             formData.append('valor', valor);
             formData.append('descripcion', descripcion);
             formData.append('user', JSON.parse(localStorage.getItem('usuarioActivo')).uid);
-
             for (let i = 0; i < imagenes.length; i++) {
                 formData.append('imagenes', imagenes[i]);
             }
-
             try {
                 const response = await fetch('/api/publicaciones/', {
                     method: 'POST',
@@ -136,7 +173,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     body: formData,
                     credentials: 'include'
                 });
-
                 const data = await response.json();
                 if (response.ok && data.success) {
                     alert("Publicación creada con éxito.");
@@ -152,21 +188,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// ===================== Previsualización de Imágenes =====================
 document.addEventListener('DOMContentLoaded', function () {
     const imagenesInput = document.getElementById('imagenes');
     const previewContainer = document.getElementById('previewImagenes');
-
     if (imagenesInput) {
         imagenesInput.addEventListener('change', function () {
-            previewContainer.innerHTML = ''; // Limpia previews anteriores
-
+            previewContainer.innerHTML = '';
             const archivos = imagenesInput.files;
             if (archivos.length > 3) {
                 alert("Solo puedes subir hasta 3 imágenes.");
-                imagenesInput.value = "";  // Resetea el input
+                imagenesInput.value = "";
                 return;
             }
-
             Array.from(archivos).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function (e) {
@@ -182,44 +216,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-
-function verDetallePublicacion(id) {
-    publicacionActivaId = id;
-
-    fetch(`/api/publicacion/${id}/`)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('detalleTituloLibro').textContent = data.libro.titulo;
-            document.getElementById('detalleAutor').textContent = data.libro.autor;
-            document.getElementById('detalleEstadoLibro').textContent = data.libro.estado;
-            document.getElementById('detalleGenero').textContent = data.libro.genero;
-            document.getElementById('detallePaginas').textContent = data.libro.paginas;
-            document.getElementById('detalleCantidad').textContent = data.libro.cantidad;
-
-            document.getElementById('detalleTipo').textContent = data.tipo_transaccion;
-            document.getElementById('detalleValor').textContent = data.valor;
-            document.getElementById('detalleEstado').textContent = data.estado_publicacion;
-            document.getElementById('detalleDescripcion').textContent = data.descripcion;
-
-            const imgContainer = document.getElementById('detalleImagenes');
-            imgContainer.innerHTML = '';
-            (data.imagenes || []).forEach(img => {
-                const imgTag = document.createElement('img');
-                imgTag.src = img.imagen;
-                imgTag.className = "img-thumbnail m-1";
-                imgTag.style.width = "100px";
-                imgContainer.appendChild(imgTag);
-            });
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Error al cargar detalles de la publicación.");
-        });
-}
-
+// ===================== Acciones sobre Publicaciones =====================
 document.addEventListener('DOMContentLoaded', function () {
     const aceptarBtn = document.getElementById('btnAceptarPublicacion');
-
     if (aceptarBtn) {
         aceptarBtn.addEventListener('click', async () => {
             const usuarioActivo = JSON.parse(localStorage.getItem('usuarioActivo'));
@@ -227,12 +226,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert("Debe iniciar sesión para aceptar la publicación.");
                 return;
             }
-
             if (!publicacionActivaId) {
                 alert("No hay publicación seleccionada.");
                 return;
             }
-
             try {
                 const response = await fetch(`/api/publicacion/${publicacionActivaId}/aceptar/`, {
                     method: 'POST',
@@ -242,7 +239,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     body: JSON.stringify({ comprador_uid: usuarioActivo.uid })  
                 });
-
                 const result = await response.json();
                 if (result.success) {
                     alert("Has aceptado la publicación correctamente.");
@@ -261,7 +257,6 @@ document.addEventListener('DOMContentLoaded', function () {
 async function cambiarEstadoAEnProceso(publicacionId) {
     const confirmar = confirm("¿Deseas marcar esta publicación como 'En proceso'?");
     if (!confirmar) return;
-
     try {
         const response = await fetch(`/api/publicacion/${publicacionId}/confirmar-en-proceso/`, {
             method: 'POST',
@@ -269,7 +264,6 @@ async function cambiarEstadoAEnProceso(publicacionId) {
                 'X-CSRFToken': getCSRFToken()
             }
         });
-
         const data = await response.json();
         if (response.ok && data.success) {
             alert("La publicación ha sido marcada como 'En proceso'");
@@ -283,11 +277,9 @@ async function cambiarEstadoAEnProceso(publicacionId) {
     }
 }
 
-
 async function cancelarPublicacion(publicacionId) {
     const confirmar = confirm("¿Estás seguro de que deseas cancelar esta publicación?");
     if (!confirmar) return;
-
     try {
         const response = await fetch(`/api/publicacion/${publicacionId}/cancelar/`, {
             method: 'POST',
@@ -295,7 +287,6 @@ async function cancelarPublicacion(publicacionId) {
                 'X-CSRFToken': getCSRFToken()
             }
         });
-
         const result = await response.json();
         if (response.ok && result.success) {
             alert("La publicación ha sido cancelada.");
@@ -312,7 +303,6 @@ async function cancelarPublicacion(publicacionId) {
 async function volver_a_disponible(publicacionId) {
     const confirmar = confirm("¿Deseas volver a publicar esta publicación?");
     if (!confirmar) return;
-
     try {
         const response = await fetch(`/api/publicacion/${publicacionId}/volver-a-disponible/`, {
             method: 'POST',
@@ -320,7 +310,6 @@ async function volver_a_disponible(publicacionId) {
                 'X-CSRFToken': getCSRFToken()
             }
         });
-
         const data = await response.json();
         if (response.ok && data.success) {
             alert("La publicación ha vuelto a estar disponible.");
@@ -334,37 +323,30 @@ async function volver_a_disponible(publicacionId) {
     }
 }
 
-
-
-
 async function Publicar(publicacionId) {
-  const confirmar = confirm("¿Deseas publicar esta publicación?");
-  if (!confirmar) return;
-
-  try {
-    const response = await fetch(`/api/publicacion/${publicacionId}/Publicar/`, {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': getCSRFToken()
-      }
-    });
-
-    const data = await response.json();
-    if (response.ok && data.success) {
-      alert("La publicación está disponible.");
-      // Redirección a Mis publicaciones
-      window.location.href = '/publicaciones/';
-    } else {
-      alert(data.error || "No se pudo actualizar la publicación.");
+    const confirmar = confirm("¿Deseas publicar esta publicación?");
+    if (!confirmar) return;
+    try {
+        const response = await fetch(`/api/publicacion/${publicacionId}/Publicar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+            alert("La publicación está disponible.");
+            window.location.href = '/publicaciones/';
+        } else {
+            alert(data.error || "No se pudo actualizar la publicación.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Error al actualizar el estado.");
     }
-  } catch (err) {
-    console.error(err);
-    alert("Error al actualizar el estado.");
-  }
 }
 
-
-// Valoraciones
+// ===================== Valoraciones =====================
 
 // Mostrar modal de valoración al ofertador
 function abrirModalValorarOfertador(idPublicacion, uidOfertador) {
@@ -387,16 +369,13 @@ function abrirModalValorarComprador(idPublicacion, uidComprador) {
 // Enviar valoración al ofertador
 document.getElementById('formValorarOfertador')?.addEventListener('submit', async function (e) {
     e.preventDefault();
-
     const ofertadorId = document.getElementById('ofertadorId').value;
     const rating = document.querySelector('#formValorarOfertador input[name="rating"]:checked')?.value;
     const comentario = document.getElementById('comentario_ofertador').value;
-
     if (!rating || !comentario) {
         alert("Por favor completa la puntuación y el comentario.");
         return;
     }
-
     try {
         const res = await fetch('/api/valorar/ofertador/', {
             method: 'POST',
@@ -411,7 +390,6 @@ document.getElementById('formValorarOfertador')?.addEventListener('submit', asyn
                 comentario: comentario
             })
         });
-
         if (res.ok) {
             await marcarComoCompletado();
             alert("¡Valoración al ofertador enviada!");
@@ -431,16 +409,13 @@ document.getElementById('formValorarOfertador')?.addEventListener('submit', asyn
 // Enviar valoración al comprador
 document.getElementById('formValorarComprador')?.addEventListener('submit', async function (e) {
     e.preventDefault();
-
     const compradorId = document.getElementById('compradorId').value;
     const rating = document.querySelector('#formValorarComprador input[name="rating"]:checked')?.value;
     const comentario = document.getElementById('comentario_comprador').value;
-
     if (!rating || !comentario) {
         alert("Por favor completa la puntuación y el comentario.");
         return;
     }
-
     try {
         const res = await fetch('/api/valorar/comprador/', {
             method: 'POST',
@@ -455,7 +430,6 @@ document.getElementById('formValorarComprador')?.addEventListener('submit', asyn
                 comentario: comentario
             })
         });
-
         if (res.ok) {
             await marcarComoCompletado();
             alert("¡Valoración al comprador enviada!");
@@ -478,7 +452,6 @@ async function marcarComoCompletado() {
         console.warn("No hay ID de publicación activa.");
         return;
     }
-
     try {
         const response = await fetch(`/api/publicacion/${publicacionActivaId}/marcar-completado/`, {
             method: 'POST',
@@ -487,9 +460,7 @@ async function marcarComoCompletado() {
             },
             credentials: 'include'
         });
-
         const data = await response.json();
-
         if (response.ok && data.success) {
             if (data.estado === 'completado') {
                 alert("🎉 ¡La publicación ha sido marcada como COMPLETADA por ambos usuarios!");
@@ -505,68 +476,58 @@ async function marcarComoCompletado() {
         alert("Error al comunicarse con el servidor.");
     }
 }
+
+// ===================== Mapas (Ubicación) =====================
 document.addEventListener('DOMContentLoaded', function () {
-  const ubicacionInput = document.getElementById('ubicacion');
-
-  if (ubicacionInput && ubicacionInput.value && ubicacionInput.value.includes(',')) {
-    const [lng, lat] = ubicacionInput.value.split(',').map(parseFloat);
-
-    mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
-
-    const map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [lng, lat],
-      zoom: 13
-    });
-
-    // Marcador de la ubicación del usuario (ofertador)
-    new mapboxgl.Marker({ color: '#FF0000' })
-      .setLngLat([lng, lat])
-      .setPopup(new mapboxgl.Popup().setText("Ubicación del usuario"))
-      .addTo(map);
-
-    // Obtener y marcar ubicación del visitante (tú)
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLng = position.coords.longitude;
-          const userLat = position.coords.latitude;
-
-          new mapboxgl.Marker({ color: '#0000FF' })
-            .setLngLat([userLng, userLat])
-            .setPopup(new mapboxgl.Popup().setText("Tú estás aquí"))
+    const ubicacionInput = document.getElementById('ubicacion');
+    if (ubicacionInput && ubicacionInput.value && ubicacionInput.value.includes(',')) {
+        const [lng, lat] = ubicacionInput.value.split(',').map(parseFloat);
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [lng, lat],
+            zoom: 13
+        });
+        new mapboxgl.Marker({ color: '#FF0000' })
+            .setLngLat([lng, lat])
+            .setPopup(new mapboxgl.Popup().setText("Ubicación del usuario"))
             .addTo(map);
-        },
-        (error) => {
-          console.warn("No se pudo obtener tu ubicación:", error);
-        },
-        { enableHighAccuracy: true, timeout: 5000 }
-      );
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userLng = position.coords.longitude;
+                    const userLat = position.coords.latitude;
+                    new mapboxgl.Marker({ color: '#0000FF' })
+                        .setLngLat([userLng, userLat])
+                        .setPopup(new mapboxgl.Popup().setText("Tú estás aquí"))
+                        .addTo(map);
+                },
+                (error) => {
+                    console.warn("No se pudo obtener tu ubicación:", error);
+                },
+                { enableHighAccuracy: true, timeout: 5000 }
+            );
+        }
     }
-  }
 });
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!ubicacionComprador || !ubicacionComprador.includes(",")) return;
-
     const coords = ubicacionComprador.split(",").map(c => parseFloat(c.trim()));
     if (coords.length !== 2 || isNaN(coords[0]) || isNaN(coords[1])) return;
-
     const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11',
         center: coords,
         zoom: 13
     });
-
     new mapboxgl.Marker({ color: 'red' })
         .setLngLat(coords)
         .setPopup(new mapboxgl.Popup().setText("Ubicación del comprador"))
         .addTo(map);
-
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -579,4 +540,32 @@ document.addEventListener('DOMContentLoaded', () => {
             (error) => console.warn("Ubicación no disponible:", error)
         );
     }
+});
+
+// ===================== Renderizado de Estrellas =====================
+function renderStars(containerId) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const rating = parseFloat(el.dataset.rating);
+    if (isNaN(rating)) return;
+    let fullStars = Math.floor(rating);
+    let halfStar = rating % 1 >= 0.25 && rating % 1 < 0.75;
+    let emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+    let starsHtml = '';
+    for (let i = 0; i < fullStars; i++) {
+        starsHtml += '★';
+    }
+    if (halfStar) {
+        starsHtml += '⯪';
+    }
+    for (let i = 0; i < emptyStars; i++) {
+        starsHtml += '☆';
+    }
+    el.innerHTML = starsHtml;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    renderStars('rating-ofertador');
+    renderStars('rating-comprador');
+
 });

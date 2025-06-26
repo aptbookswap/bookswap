@@ -1,3 +1,24 @@
+// ===================== Utilidades =====================
+function getCSRFToken() {
+  // 1. Buscar en cookies
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let c of cookies) {
+      const cookie = c.trim();
+      if (cookie.startsWith('csrftoken=')) {
+        return decodeURIComponent(cookie.substring('csrftoken='.length));
+      }
+    }
+  }
+  // 2. Buscar en el <meta name="csrf-token"> como fallback
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  if (meta) {
+    return meta.getAttribute('content');
+  }
+  return null;
+}
+
+// ===================== Inicialización =====================
 document.addEventListener('DOMContentLoaded', function () {
   const checkbox = document.getElementById('habilitarEdicion');
   const formElements = document.querySelectorAll('#formEditarPublicacion input, #formEditarPublicacion textarea, #formEditarPublicacion select');
@@ -5,39 +26,17 @@ document.addEventListener('DOMContentLoaded', function () {
   const btnEliminar = document.getElementById('btnEliminar');
   const publicacionId = document.getElementById('publicacion_id').value;
 
-
-  function getCSRFToken() {
-    // 1. Buscar en cookies
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let c of cookies) {
-            const cookie = c.trim();
-            if (cookie.startsWith('csrftoken=')) {
-                return decodeURIComponent(cookie.substring('csrftoken='.length));
-            }
-        }
-    }
-
-    // 2. Buscar en el <meta name="csrf-token"> como fallback
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    if (meta) {
-        return meta.getAttribute('content');
-    }
-
-    return null;
-}
-
-  // Deshabilitar solo elementos editables (no el estado ni los del libro)
+  // ===================== Habilitar/Deshabilitar edición =====================
   checkbox.addEventListener('change', function () {
     const enabled = this.checked;
     formElements.forEach(e => {
       if (!['tipo_transaccion', 'valor', 'descripcion'].includes(e.id)) return;
       e.disabled = !enabled;
-
     });
     btnModificar.disabled = !enabled;
   });
 
+  // ===================== Modificar publicación =====================
   btnModificar.addEventListener('click', async () => {
     const tipo = document.getElementById('tipo_transaccion').value;
     const valor = document.getElementById('valor').value;
@@ -67,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // ===================== Eliminar publicación =====================
   btnEliminar.addEventListener('click', async () => {
     if (!confirm('¿Estás seguro de que deseas eliminar esta publicación?')) return;
 
@@ -85,6 +85,4 @@ document.addEventListener('DOMContentLoaded', function () {
       alert('Error al eliminar.');
     }
   });
-
-  
 });

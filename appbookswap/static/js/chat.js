@@ -1,5 +1,7 @@
+// ===================== Variables globales =====================
 let chatUID = null;
 
+// ===================== Funciones de UI =====================
 function abrirChatModal(uid, nombre) {
     chatUID = uid;
     document.getElementById("chatUsername").textContent = nombre;
@@ -17,6 +19,7 @@ function scrollToBottom() {
     }
 }
 
+// ===================== Comunicación con el servidor =====================
 function fetchMessages() {
     if (!chatUID) return;
 
@@ -28,6 +31,7 @@ function fetchMessages() {
         });
 }
 
+// ===================== Envío de mensajes =====================
 document.getElementById("send-message-form")?.addEventListener("submit", function (e) {
     e.preventDefault();
 
@@ -52,4 +56,5 @@ document.getElementById("send-message-form")?.addEventListener("submit", functio
     });
 });
 
+// ===================== Actualización automática =====================
 setInterval(fetchMessages, 3000);
