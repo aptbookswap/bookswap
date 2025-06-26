@@ -72,6 +72,7 @@ class ValoracionACompradorSerializer(serializers.ModelSerializer):
 #------------------------------------
 class ImagenPublicacionSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(use_url=True)
+    
 
     class Meta:
         model = ImagenPublicacion
@@ -80,6 +81,7 @@ class ImagenPublicacionSerializer(serializers.ModelSerializer):
 
 class PublicacionSerializer(serializers.ModelSerializer):
     imagenes = ImagenPublicacionSerializer(many=True, read_only=True)
+    libro = LibroSerializer(read_only=True) 
 
     class Meta:
         model = Publicacion

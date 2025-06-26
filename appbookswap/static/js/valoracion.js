@@ -1,3 +1,4 @@
+// ===================== Utilidades =====================
 function getCSRFToken() {
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
@@ -8,18 +9,17 @@ function getCSRFToken() {
             }
         }
     }
-
     const meta = document.querySelector('meta[name="csrf-token"]');
     if (meta) {
         return meta.getAttribute('content');
     }
-
     return null;
 }
 
+// ===================== Variables globales =====================
 let publicacionActivaId = null;
 
-// Mostrar modal de valoración al ofertador
+// ===================== Funciones para mostrar modales =====================
 function abrirModalValorarOfertador(idPublicacion, uidOfertador) {
     publicacionActivaId = idPublicacion;
     const modal = new bootstrap.Modal(document.getElementById('modalValorarOfertador'));
@@ -28,7 +28,6 @@ function abrirModalValorarOfertador(idPublicacion, uidOfertador) {
     modal.show();
 }
 
-// Mostrar modal de valoración al comprador
 function abrirModalValorarComprador(idPublicacion, uidComprador) {
     publicacionActivaId = idPublicacion;
     const modal = new bootstrap.Modal(document.getElementById('modalValorarComprador'));
@@ -37,7 +36,7 @@ function abrirModalValorarComprador(idPublicacion, uidComprador) {
     modal.show();
 }
 
-// Enviar valoración al ofertador
+// ===================== Envío de valoración al ofertador =====================
 document.getElementById('formValorarOfertador')?.addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -81,7 +80,7 @@ document.getElementById('formValorarOfertador')?.addEventListener('submit', asyn
     }
 });
 
-// Enviar valoración al comprador
+// ===================== Envío de valoración al comprador =====================
 document.getElementById('formValorarComprador')?.addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -125,7 +124,7 @@ document.getElementById('formValorarComprador')?.addEventListener('submit', asyn
     }
 });
 
-// Marcar publicación como completada
+// ===================== Marcar publicación como completada =====================
 async function marcarComoCompletado() {
     if (!publicacionActivaId) {
         console.warn("No hay ID de publicación activa.");
@@ -158,4 +157,3 @@ async function marcarComoCompletado() {
         alert("Error al comunicarse con el servidor.");
     }
 }
-

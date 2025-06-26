@@ -1,3 +1,4 @@
+// ===================== Inicialización =====================
 document.addEventListener('DOMContentLoaded', function() {
     mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
 
@@ -7,7 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
         initMap();
     }
 
+    // ===================== Función principal del mapa =====================
     function initMap() {
+        // ----------- Datos del usuario actual -----------
         const coordElement = document.getElementById('usuario-actual-data');
         const coordsStr = coordElement ? coordElement.getAttribute('data-coords') : null;
         const currentUsername = coordElement ? coordElement.getAttribute('data-username') : null;
@@ -36,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // ----------- Inicialización del mapa -----------
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v11',
@@ -43,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
             zoom: 15
         });
 
+        // ===================== Geolocalización =====================
         let watchingPosition = false;
         let currentPosition = null;
         let userMarker = null;
@@ -115,6 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
 
+        // ===================== Controles del mapa =====================
         const geoButton = document.createElement('button');
         geoButton.className = 'mapboxgl-ctrl-geolocate';
         geoButton.innerHTML = '<i class="fas fa-location-arrow"></i>';
@@ -134,6 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
             onRemove: function() {}
         }, 'top-right');
 
+        // ===================== Marcadores de usuarios =====================
         map.on('load', function() {
             loadUserMarkers(map);
 
@@ -193,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-
+// ===================== Función global para ver publicaciones =====================
 function verPublicacionesUsuario(uid) {
     if (!uid) {
         alert("Error: Usuario no válido");

@@ -1,15 +1,19 @@
+// ===================== Inicialización =====================
 document.addEventListener('DOMContentLoaded', function () {
+  // ===================== Variables =====================
   const generoDropdown = document.getElementById('generoDropdownEdit');
   const generoTags = document.getElementById('generoTagsEdit');
   const generoInput = document.getElementById('generoEdit');
   const toggleEdit = document.getElementById('toggleEdit');
   let generosSeleccionados = [];
 
+  // ===================== Función para cargar géneros =====================
   window.cargarGenerosLibro = function (generosStr) {
     generosSeleccionados = generosStr.split(',').map(p => p.trim()).filter(Boolean);
     updateTags();
   };
 
+  // ===================== Manejo del dropdown de géneros =====================
   generoDropdown.addEventListener('change', function () {
     const selected = this.value;
     if (selected && !generosSeleccionados.includes(selected)) {
@@ -19,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
     this.value = '';
   });
 
+  // ===================== Manejo de tags de géneros =====================
   generoTags.addEventListener('click', function (e) {
     if (!toggleEdit.checked) return;
     if (e.target.classList.contains('remove-tag')) {
@@ -28,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // ===================== Actualización visual de tags =====================
   function updateTags() {
     generoTags.innerHTML = '';
     generosSeleccionados.forEach(genero => {
@@ -39,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
     generoInput.value = generosSeleccionados.join(',');
   }
 
+  // ===================== Habilitar/Deshabilitar edición =====================
   if (toggleEdit) {
     toggleEdit.addEventListener('change', function () {
       const editable = this.checked;

@@ -1,8 +1,8 @@
-// Variables globales para el mapa
+// ===================== Variables globales para el mapa =====================
 let map = null;
 let secondaryMarker = null;
 
-// Inicializar mapa
+// ===================== Inicialización del mapa =====================
 function initMap() {
     mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
 
@@ -111,7 +111,7 @@ async function obtenerDireccion(lng, lat) {
     }
 }
 
-// Función robusta para obtener el token CSRF
+// ===================== Utilidades =====================
 function getCSRFToken() {
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
@@ -131,6 +131,7 @@ function getCSRFToken() {
     return null;
 }
 
+// ===================== Manejo de perfil y eventos =====================
 document.addEventListener('DOMContentLoaded', function () {
     const sessionData = localStorage.getItem('usuarioActivo');
     if (!sessionData) {
@@ -148,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedValues = [];
     let isEditable = false;
 
+    // ===================== Cargar datos del perfil =====================
     fetch(`/api/perfil/${usuario.uid}/`, {
         credentials: 'include'
     })
@@ -175,6 +177,7 @@ document.addEventListener('DOMContentLoaded', function () {
             alert("Error cargando perfil");
         });
 
+    // ===================== Imagen de perfil =====================
     const imgBtn = document.getElementById('changeImgBtn');
     const imgInput = document.getElementById('imgPerfilInput');
     const imgPreview = document.getElementById('imgPerfilPreview');
@@ -190,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // ===================== Edición de perfil =====================
     const toggleEdit = document.getElementById('toggleEdit');
     if (toggleEdit) {
         toggleEdit.addEventListener('change', function () {
@@ -215,6 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Al cargar la página ocultar el mapa
     document.getElementById('map').style.display = 'none';
 
+    // ===================== Manejo de preferencias (tags) =====================
     function updateTags() {
         tagsContainer.innerHTML = '';
         if (!isEditable) {
@@ -250,6 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // ===================== Guardar cambios de perfil =====================
     const guardarBtn = document.getElementById('guardarCambiosBtn');
     guardarBtn.addEventListener('click', () => {
         inputHidden.value = selectedValues.join(',');
@@ -295,6 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(err => console.error("Error al modificar perfil:", err));
     });
 
+    // ===================== Eliminar cuenta =====================
     const eliminarBtn = document.getElementById('eliminarCuentaBtn');
     eliminarBtn.addEventListener('click', () => {
         if (!confirm("¿Seguro que deseas eliminar tu cuenta?")) return;
@@ -317,4 +324,39 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(err => console.error("Error eliminando cuenta:", err));
     });
+});
+
+// ===================== Renderizado de estrellas =====================
+function renderStars(containerId) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+
+    const rating = parseFloat(el.dataset.rating);
+    if (isNaN(rating)) return;
+
+    let fullStars = Math.floor(rating);
+    let halfStar = rating % 1 >= 0.25 && rating % 1 < 0.75;
+    let emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+    let starsHtml = '';
+
+    for (let i = 0; i < fullStars; i++) {
+        starsHtml += '★';
+    }
+
+    if (halfStar) {
+        starsHtml += '⯪'; // símbolo para media estrella
+    }
+
+    for (let i = 0; i < emptyStars; i++) {
+        starsHtml += '☆';
+    }
+
+    el.innerHTML = starsHtml;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    renderStars('rating-ofertador');
+    renderStars('rating-receptor');
+
 });

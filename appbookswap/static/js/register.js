@@ -1,91 +1,8 @@
-// Variables globales para el mapa
+// ===================== Variables globales =====================
 let map = null;
 let secondaryMarker = null;
 
-// Manejador de envío del formulario de registro
-document.getElementById('registerForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    // Obtener valores del formulario
-    const formData = {
-        nombre: document.getElementById('nombre').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        numero: document.getElementById('numero').value.trim(),
-        fecha_nacimiento: document.getElementById('fecha_nacimiento').value.trim(),
-        preferencias: document.getElementById('preferenciasInput').value.trim(),
-        ubicacion: document.getElementById('ubicacion').value.trim(),
-        direccion: document.getElementById('direccion').value.trim(),
-        password: document.getElementById('password').value,
-        confirmPassword: document.getElementById('confirmPassword').value
-    };
-
-    const messageBox = document.getElementById('message');
-    messageBox.className = 'message';
-
-    // Validaciones
-    if (formData.password !== formData.confirmPassword) {
-        showMessage('Las contraseñas no coinciden.', 'error');
-        return;
-    }
-
-    if (formData.fecha_nacimiento && new Date(formData.fecha_nacimiento) > new Date()) {
-        showMessage('La fecha de nacimiento no puede ser en el futuro.', 'error');
-        return;
-    }
-
-    if (!formData.preferencias) {
-        showMessage('Selecciona al menos una preferencia.', 'error');
-        return;
-    }
-
-    if (!formData.ubicacion || !formData.ubicacion.includes(',')) {
-        showMessage('Por favor, selecciona una ubicación en el mapa.', 'error');
-        return;
-    }
-
-    if (!formData.direccion) {
-        showMessage('Debe seleccionar una ubicación válida que genere una dirección.', 'error');
-        return;
-    }
-
-
-    // Enviar datos al backend
-    try {
-        const response = await fetch('/api/registro/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({
-                nombre: formData.nombre,
-                correo: formData.email,
-                numero: formData.numero,
-                fecha_nacimiento: formData.fecha_nacimiento,
-                preferencias: formData.preferencias,
-                ubicacion: formData.ubicacion,
-                direccion: formData.direccion,
-                password: formData.password
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            showMessage(data.mensaje || 'Registro exitoso', 'success');
-            document.getElementById('registerForm').reset();
-            if (secondaryMarker) secondaryMarker.remove();
-        } else {
-            showMessage(data.mensaje || 'Error al registrar usuario', 'error');
-        }
-
-    } catch (error) {
-        console.error("Error:", error);
-        showMessage('Error al conectar con el servidor', 'error');
-    }
-});
-
-// Inicializar mapa
+// ===================== Inicialización del mapa =====================
 function initMap() {
     mapboxgl.accessToken = 'pk.eyJ1IjoiY2hjYW5lbyIsImEiOiJjbThuNmZpYjQwbjBmMmpwd3M1aXc1N21vIn0.z40V0PC46BKyTYipeK4Uqw';
 
@@ -194,16 +111,7 @@ async function obtenerDireccion(lng, lat) {
     }
 }
 
-
-// Mensajes de estado
-function showMessage(text, type) {
-    const messageBox = document.getElementById('message');
-    messageBox.textContent = text;
-    messageBox.className = `message ${type}`;
-    setTimeout(() => messageBox.textContent = '', 3000);
-}
-
-// Manejo de preferencias (tags)
+// ===================== Manejo de preferencias (tags) =====================
 document.addEventListener('DOMContentLoaded', function () {
     if (document.getElementById('map')) {
         initMap();
@@ -243,6 +151,97 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// ===================== Envío del formulario de registro =====================
+document.getElementById('registerForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    // Obtener valores del formulario
+    const formData = {
+        nombre: document.getElementById('nombre').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        numero: document.getElementById('numero').value.trim(),
+        fecha_nacimiento: document.getElementById('fecha_nacimiento').value.trim(),
+        preferencias: document.getElementById('preferenciasInput').value.trim(),
+        ubicacion: document.getElementById('ubicacion').value.trim(),
+        direccion: document.getElementById('direccion').value.trim(),
+        password: document.getElementById('password').value,
+        confirmPassword: document.getElementById('confirmPassword').value
+    };
+
+    const messageBox = document.getElementById('message');
+    messageBox.className = 'message';
+
+    // Validaciones
+    if (formData.password !== formData.confirmPassword) {
+        showMessage('Las contraseñas no coinciden.', 'error');
+        return;
+    }
+
+    if (formData.fecha_nacimiento && new Date(formData.fecha_nacimiento) > new Date()) {
+        showMessage('La fecha de nacimiento no puede ser en el futuro.', 'error');
+        return;
+    }
+
+    if (!formData.preferencias) {
+        showMessage('Selecciona al menos una preferencia.', 'error');
+        return;
+    }
+
+    if (!formData.ubicacion || !formData.ubicacion.includes(',')) {
+        showMessage('Por favor, selecciona una ubicación en el mapa.', 'error');
+        return;
+    }
+
+    if (!formData.direccion) {
+        showMessage('Debe seleccionar una ubicación válida que genere una dirección.', 'error');
+        return;
+    }
+
+    // Enviar datos al backend
+    try {
+        const response = await fetch('/api/registro/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                nombre: formData.nombre,
+                correo: formData.email,
+                numero: formData.numero,
+                fecha_nacimiento: formData.fecha_nacimiento,
+                preferencias: formData.preferencias,
+                ubicacion: formData.ubicacion,
+                direccion: formData.direccion,
+                password: formData.password
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showMessage(data.mensaje || 'Registro exitoso', 'success');
+            document.getElementById('registerForm').reset();
+            if (secondaryMarker) secondaryMarker.remove();
+        } else {
+            showMessage(data.mensaje || 'Error al registrar usuario', 'error');
+        }
+
+    } catch (error) {
+        console.error("Error:", error);
+        showMessage('Error al conectar con el servidor', 'error');
+    }
+});
+
+// ===================== Utilidades =====================
+// Mensajes de estado
+function showMessage(text, type) {
+    const messageBox = document.getElementById('message');
+    messageBox.textContent = text;
+    messageBox.className = `message ${type}`;
+    setTimeout(() => messageBox.textContent = '', 3000);
+}
+
 // CSRF token helper
 function getCookie(name) {
     const cookies = document.cookie.split(';');
@@ -252,5 +251,6 @@ function getCookie(name) {
             return decodeURIComponent(cookie.substring(name.length + 1));
         }
     }
-    return null;
+  return null;
 }
+    
