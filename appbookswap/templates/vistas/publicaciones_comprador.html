@@ -49,10 +49,10 @@
   </div>
   {% endif %}
 
-  {% if canceladas %}
+  {% if cancelados_history %}
   <h4 class="mt-4">❌ Canceladas</h4>
   <div class="row g-4">
-    {% for publicacion in canceladas %}
+    {% for publicacion in cancelados_history %}
       {% include 'vistas/partials/card_publicacion.html' %}
     {% endfor %}
   </div>

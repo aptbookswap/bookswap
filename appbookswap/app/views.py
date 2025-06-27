@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.http import JsonResponse
 from django.contrib import messages
-from django.contrib.auth import get_user_model, authenticate, login as auth_login
+from django.contrib.auth import get_user_model, authenticate, login as auth_login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.utils.decorators import method_decorator
@@ -12,7 +12,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import PermissionDenied
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework import status
@@ -125,6 +125,12 @@ def login_usuario(request):
     except Exception as e:
         print(f'Error login: {e}')
         return JsonResponse({'success': False, 'mensaje': 'Error interno'}, status=500)
+    
+def api_logout(request):
+    if request.method == 'POST':
+        logout(request)
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
 
 # =========================
 # USUARIO Y PERFIL (DRF)
@@ -426,7 +432,6 @@ def confirmar_en_proceso(request, publicacion_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-@login_required
 def cancelar_publicacion(request, publicacion_id):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
@@ -437,7 +442,27 @@ def cancelar_publicacion(request, publicacion_id):
             return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
         if publicacion.estado_publicacion not in ['en_espera', 'en_proceso']:
             return JsonResponse({'success': False, 'error': 'No se puede cancelar en el estado actual'}, status=400)
+        
+        # Crear copia histórica antes de cancelar
+        publicacion_hist = Publicacion.objects.create(
+            user_ofertador=publicacion.user_ofertador,
+            libro=publicacion.libro,
+            tipo_transaccion=publicacion.tipo_transaccion,
+            valor=publicacion.valor,
+            descripcion=publicacion.descripcion,
+            estado_publicacion="cancel_history",
+            user_comprador=publicacion.user_comprador,
+            ticket_comprador=publicacion.ticket_comprador,
+            ticket_ofertador=publicacion.ticket_ofertador,
+            fecha_termino=publicacion.fecha_termino
+        )
+        # Copiar imágenes
+        for img in publicacion.imagenes.all():
+            ImagenPublicacion.objects.create(publicacion=publicacion_hist, imagen=img.imagen)
+
+        # Cancelar publicación original y borrar comprador
         publicacion.estado_publicacion = 'cancelado'
+        publicacion.user_comprador = None
         publicacion.save()
         return JsonResponse({'success': True})
     except Exception as e:
@@ -523,12 +548,14 @@ def publicaciones_comprador_view(request):
     completadas = publicaciones.filter(estado_publicacion='completado')
     canceladas = publicaciones.filter(estado_publicacion='cancelado')
     pendiente = publicaciones.filter(estado_publicacion='pendiente')
+    cancelados_history = publicaciones.filter(estado_publicacion='cancel_history')
     return render(request, 'vistas/publicaciones_comprador.html', {
         'en_espera': en_espera,
         'en_proceso': en_proceso,
         'completadas': completadas,
         'canceladas': canceladas,
-        'pendiente': pendiente
+        'pendiente': pendiente,
+        'cancelados_history': cancelados_history,
     })
 
 # =========================
@@ -568,3 +595,39 @@ def marcar_ticket_completado(request, id_publicacion):
         publicacion.fecha_termino = timezone.now()
     publicacion.save()
     return
+
+
+def catalogo_publicaciones_ajax(request):
+    publicaciones = Publicacion.objects.filter(estado_publicacion='disponible')
+    # Excluir publicaciones del usuario autenticado
+    if request.user.is_authenticated:
+        publicaciones = publicaciones.exclude(user_ofertador=request.user)
+    query = request.GET.get('q', '')
+    filtro_genero = request.GET.get('pref', '')
+    filtro_top = request.GET.get('top', '')
+    filtro_tipo = request.GET.get('tipo', '')
+    filtro_estado = request.GET.get('estado', '')
+
+    if query:
+        publicaciones = publicaciones.filter(libro__titulo__icontains=query)
+    if filtro_genero:
+        publicaciones = publicaciones.filter(libro__genero__icontains=filtro_genero)
+    if filtro_tipo:
+        publicaciones = publicaciones.filter(tipo_transaccion=filtro_tipo)
+    if filtro_estado:
+        publicaciones = publicaciones.filter(libro__estado=filtro_estado)
+    if filtro_top == '1':
+        mejores = ValoracionAComprador.objects.values('comprador').annotate(prom=Avg('puntuacion')).order_by('-prom')[:10]
+        mejores_ids = [m['comprador'] for m in mejores]
+        publicaciones = publicaciones.filter(user_ofertador__uid__in=mejores_ids)
+
+    html = render_to_string('vistas/partials/catalogo_publicaciones.html', {
+        'publicaciones': publicaciones
+    }, request=request)
+    return JsonResponse({'html': html})
+
+def detalle_publicacion_catalogo(request, id_publicacion):
+    publicacion = get_object_or_404(Publicacion, id_publicacion=id_publicacion)
+    return render(request, 'vistas/detalle_publicacion_catalogo.html', {
+        'publicacion': publicacion
+    })

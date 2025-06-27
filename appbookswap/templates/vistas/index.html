@@ -108,6 +108,42 @@
     </div>
 </section>
 
+<section id="catalogo" class="container my-5">
+    <h2 class="text-center mb-4">Catálogo de Publicaciones</h2>
+    <form id="formCatalogo" class="row g-3 mb-4 justify-content-center">
+        <div class="col-md-4">
+            <input type="text" name="q" id="catalogoBuscar" class="form-control" placeholder="Buscar libro por título...">
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="pref" id="catalogoPref" class="form-control" placeholder="Filtrar por género o preferencia...">
+        </div>
+        <div class="col-md-2">
+            <select name="tipo" id="catalogoTipo" class="form-select">
+                <option value="">Tipo de transacción</option>
+                <option value="venta">Venta</option>
+                <option value="donacion">Donación</option>
+                <option value="intercambio">Intercambio</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="estado" id="catalogoEstado" class="form-select">
+                <option value="">Estado del libro</option>
+                <option value="Perfecto">Perfecto</option>
+                <option value="Con detalles">Con detalles</option>
+                <option value="Desgastado">Desgastado</option>
+                <option value="En malas condiciones">En malas condiciones</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="top" id="catalogoTop" class="form-select">
+                <option value="">Todos los usuarios</option>
+                <option value="1">Mejor valorados como compradores</option>
+            </select>
+        </div>
+    </form>
+    <div id="catalogoResultados" class="row g-4"></div>
+</section>
+
 {% endblock %}
 
 {% block scripts %}

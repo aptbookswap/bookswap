@@ -171,3 +171,9 @@ footer .fab:hover {
     width: 20px;
     text-align: center;
 }
+.alert-compact {
+  display: inline-block;
+  width: auto;
+  padding: 6px 12px;
+  font-size: 0.95em;
+}

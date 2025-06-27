@@ -7,7 +7,7 @@ from .views import (
     valorar_ofertador, valorar_comprador, detalle_publicacion_view, publicacion_detalle,
     aceptar_publicacion, confirmar_en_proceso, volver_a_disponible, marcar_completado,
     detalle_publicacion_estado_view, Publicar, publicaciones_comprador_view,
-    marcar_ticket_completado, CustomPasswordResetConfirmView
+    marcar_ticket_completado, CustomPasswordResetConfirmView, catalogo_publicaciones_ajax, detalle_publicacion_catalogo,api_logout
 )
 
 urlpatterns = [
@@ -18,6 +18,7 @@ urlpatterns = [
     path('registro/', views.registro, name='registro'),
     path('api/registro/', views.api_registro, name='api_registro'),
     path('api/login/', views.login_usuario, name='login_usuario'),
+    path('api/logout/', api_logout, name='api_logout'),
 
     # Perfil de usuario
     path('perfil/', views.perfil, name='perfil'),
@@ -73,6 +74,11 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
         template_name='password_reset/complete.html'
     ), name='password_reset_complete'),
+
+
+    #Catalogo de publicaciones
+    path('catalogo/ajax/', catalogo_publicaciones_ajax, name='catalogo_publicaciones_ajax'),
+    path('catalogo/publicacion/<int:id_publicacion>/', detalle_publicacion_catalogo, name='detalle_publicacion_catalogo'),
 ]
 
 # Archivos estáticos/media
