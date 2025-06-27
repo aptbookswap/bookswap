@@ -49,3 +49,27 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('formCatalogo');
+    const resultados = document.getElementById('catalogoResultados');
+
+    function buscarCatalogo() {
+        const params = new URLSearchParams(new FormData(form)).toString();
+        fetch(`/catalogo/ajax/?${params}`)
+            .then(res => res.json())
+            .then(data => {
+                resultados.innerHTML = data.html;
+            });
+    }
+
+    // Buscar al escribir/cambiar filtros
+    document.getElementById('catalogoBuscar').addEventListener('input', buscarCatalogo);
+    document.getElementById('catalogoPref').addEventListener('input', buscarCatalogo);
+    document.getElementById('catalogoTipo').addEventListener('change', buscarCatalogo);
+    document.getElementById('catalogoEstado').addEventListener('change', buscarCatalogo);
+    document.getElementById('catalogoTop').addEventListener('change', buscarCatalogo);
+
+    // Mostrar todas las publicaciones al cargar la página
+    buscarCatalogo();
+});

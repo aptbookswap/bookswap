@@ -28,13 +28,25 @@
           <li class="list-group-item"><strong>Direccion:</strong> {{ usuario.direccion }}</li>
           <li class="list-group-item">
             <strong>Ubicación en el mapa:</strong>
-            <div id="map" style="width: 100%; height: 250px; margin-top: 10px; border-radius: 10px; border: 1px solid #ccc;"></div>
-            <input type="hidden" id="ubicacion" value="{{ usuario.ubicacion }}">
+            {% if user.is_authenticated %}
+              <div id="map" style="width: 100%; height: 250px; margin-top: 10px; border-radius: 10px; border: 1px solid #ccc;"></div>
+              <input type="hidden" id="ubicacion" value="{{ usuario.ubicacion }}">
+            {% else %}
+              <div class="alert alert-warning mt-2 mb-0 py-2" style="font-size:0.95em;">
+                Debes iniciar sesión para ver el mapa.
+              </div>
+            {% endif %}
           </li>
-        </ul>
-        <button class="btn btn-outline-dark btn-sm mt-3 w-100" onclick="abrirChatModal('{{ usuario.uid }}', '{{ usuario.first_name }}')">
-          <i class="fa fa-comment"></i> Chatear
-        </button>
+
+          {% if user.is_authenticated %}
+            <button class="btn btn-outline-dark btn-sm mt-3 w-100" onclick="abrirChatModal('{{ usuario.uid }}', '{{ usuario.first_name }}')">
+              <i class="fa fa-comment"></i> Chatear
+            </button>
+          {% else %}
+            <div class="alert alert-warning mt-3 mb-0 py-2 text-center" style="font-size:0.95em;">
+              Debes iniciar sesión para chatear.
+            </div>
+          {% endif %}
         <div class="mt-4 text-center">
           <h6 class="fw-bold mb-2">⭐ Valoraciones</h6>
           <div class="d-flex justify-content-center gap-5 flex-wrap">
@@ -114,7 +126,6 @@
         <p><strong>Estado Publicación:</strong> <span id="detalleEstado"></span></p>
         <p><strong>Descripción:</strong></p>
         <p id="detalleDescripcion"></p>
-        <div id="detalleImagenes" class="d-flex flex-wrap"></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-primary" id="btnAceptarPublicacion">Aceptar</button>

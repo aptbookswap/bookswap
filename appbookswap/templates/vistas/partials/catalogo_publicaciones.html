@@ -1,0 +1,7 @@
+<div class="row g-4">
+    {% for publicacion in publicaciones %}
+        {% include 'vistas/partials/card_publicacion.html' %}
+    {% empty %}
+        <p class="text-center text-muted">No se encontraron publicaciones.</p>
+    {% endfor %}
+</div>

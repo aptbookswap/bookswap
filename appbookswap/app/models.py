@@ -208,6 +208,7 @@ class Publicacion(models.Model):
         ('completado', 'Completado'),
         ('cancelado', 'Cancelado'),
         ('pendiente', 'Pendiente'),
+        ('cancel_history', 'Cancelado (Histórico)'),
     ]
 
     TRANSACCION_CHOICES = [

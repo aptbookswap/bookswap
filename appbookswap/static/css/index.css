@@ -258,3 +258,7 @@ footer {
         max-width: 50px;
     }
 }
+
+.modal-xxl {
+  max-width: 98vw;
+}

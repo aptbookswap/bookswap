@@ -96,14 +96,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Cierre de sesión
     const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('usuarioActivo');
-            document.getElementById('authButtons').classList.remove('d-none');
-            document.getElementById('userMenu').classList.add('d-none');
-            window.location.href = "/";
-        });
-    }
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                // Llama al backend para cerrar sesión
+                await fetch('/api/logout/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    credentials: 'include'
+                });
+                // Limpia el frontend
+                localStorage.removeItem('usuarioActivo');
+                document.getElementById('authButtons').classList.remove('d-none');
+                document.getElementById('userMenu').classList.add('d-none');
+                window.location.href = "/";
+            });
+        }
 
     // Limpiar backdrop residual al cerrar modal
     loginModalElement.addEventListener('hidden.bs.modal', () => {
