@@ -1,0 +1,44 @@
+/* Aplica los estilos solo a las cards de publicaciones usando un id */
+#card-publicacion {
+  height: 490px;
+  width: 100%;
+  max-width: 370px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+#card-publicacion .card-img-top {
+  height: 260px;
+  object-fit: cover;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+#card-publicacion .card-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 1.5rem;
+}
+
+#card-publicacion .card-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#card-publicacion .card-text {
+  font-size: 1.05rem;
+  max-height: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#card-publicacion .mt-3 {
+  margin-top: auto !important;
+}

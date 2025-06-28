@@ -102,7 +102,7 @@
 </div>
 
 <<!-- Modal Detalle Publicación -->
-<div class="modal fade" id="detallePublicacionModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="detallePublicacionModal" tabindex="-1" aria-hidden="true">More actions
   <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
@@ -110,10 +110,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
-        <!-- Imagen principal del libro -->
-        <div class="text-center mb-3">
-          <img id="detalleImagenPrincipal" src="" alt="Imagen del libro" class="img-fluid rounded" style="max-height: 250px; max-width: 100%;">
-        </div>
         <h5 id="detalleTituloLibro"></h5>
         <p><strong>Autor:</strong> <span id="detalleAutor"></span></p>
         <p><strong>Estado:</strong> <span id="detalleEstadoLibro"></span></p>
@@ -126,6 +122,7 @@
         <p><strong>Estado Publicación:</strong> <span id="detalleEstado"></span></p>
         <p><strong>Descripción:</strong></p>
         <p id="detalleDescripcion"></p>
+        <div id="detalleImagenes" class="d-flex flex-wrap"></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-primary" id="btnAceptarPublicacion">Aceptar</button>

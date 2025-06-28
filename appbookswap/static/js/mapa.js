@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===================== Función global para ver publicaciones =====================
 function verPublicacionesUsuario(uid) {
     if (!uid) {
-        alert("Error: Usuario no válido");
+        showModal("Error: Usuario no válido");
         return;
     }
     window.location.href = `/publicaciones/usuario/${uid}/`;

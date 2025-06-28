@@ -25,6 +25,37 @@ document.addEventListener('DOMContentLoaded', function () {
   const btnModificar = document.getElementById('btnModificar');
   const btnEliminar = document.getElementById('btnEliminar');
   const publicacionId = document.getElementById('publicacion_id').value;
+  const editarImagenBtn = document.getElementById('editarImagenPublicacionBtn');
+  const editarImagenInput = document.getElementById('editarImagenPublicacionInput');
+  const detalleImagen = document.getElementById('detalleImagenPublicacion');
+
+  if (checkbox && editarImagenBtn && editarImagenInput) {
+    checkbox.addEventListener('change', function () {
+      const editable = this.checked;
+      editarImagenBtn.style.display = editable ? 'inline-block' : 'none';
+    });
+
+    editarImagenBtn.addEventListener('click', function () {
+      editarImagenInput.click();
+    });
+
+    editarImagenInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          detalleImagen.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+      if (result.success) {
+        editarImagenInput.value = "";
+        showModal('Publicación modificada correctamente.', function() {
+          window.location.reload();
+        });
+      }
+    });
+  }
 
   // ===================== Habilitar/Deshabilitar edición =====================
   checkbox.addEventListener('change', function () {
@@ -42,47 +73,52 @@ document.addEventListener('DOMContentLoaded', function () {
     const valor = document.getElementById('valor').value;
     const descripcion = document.getElementById('descripcion').value;
 
-    const data = {
-      tipo_transaccion: tipo,
-      valor: valor,
-      descripcion: descripcion
-    };
+    const formData = new FormData();
+    formData.append('tipo_transaccion', tipo);
+    formData.append('valor', valor);
+    formData.append('descripcion', descripcion);
+
+    // Adjuntar imagen solo si se seleccionó una nueva
+    if (editarImagenInput.files.length > 0) {
+      formData.append('imagen', editarImagenInput.files[0]);
+    }
 
     const response = await fetch(`/api/publicacion/${publicacionId}/`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
         'X-CSRFToken': getCSRFToken('csrftoken')
+        // No pongas 'Content-Type'
       },
-      body: JSON.stringify(data)
+      body: formData
     });
 
     const result = await response.json();
     if (result.success) {
-      alert('Publicación modificada correctamente.');
-      window.location.reload();
+      showModal('Publicación modificada correctamente.', function() {
+        window.location.reload();
+      });
     } else {
-      alert('Error al modificar.');
+      showModal('Error al modificar.');
     }
   });
-
   // ===================== Eliminar publicación =====================
   btnEliminar.addEventListener('click', async () => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta publicación?')) return;
-
-    const response = await fetch(`/api/publicacion/${publicacionId}/`, {
-      method: 'DELETE',
-      headers: {
-        'X-CSRFToken': getCSRFToken('csrftoken')
-      }
-    });
-
-    const result = await response.json();
-    if (result.success) {
-      alert('Publicación eliminada.');
-      window.location.href = '/publicaciones/';
-    } else {
-      alert('Error al eliminar.');
+  const response = await fetch(`/api/publicacion/${publicacionId}/`, {
+    method: 'DELETE',
+    headers: {
+      'X-CSRFToken': getCSRFToken('csrftoken')
     }
   });
+
+  const result = await response.json();
+  if (result.success) {
+    showModal('Publicación eliminada.', function() {
+      window.location.href = '/publicaciones/';
+    });
+  } else {
+    showModal('Error al eliminar.');
+  }
+});
+
+
 });

@@ -64,6 +64,8 @@ main {
     border-radius: 50%;
 }
 
+
+
 /* --- Footer --- */
 footer {
     background-color: #343a40;
@@ -176,4 +178,72 @@ footer .fab:hover {
   width: auto;
   padding: 6px 12px;
   font-size: 0.95em;
+}
+
+/* Modal reutilizable de alertas */
+#customModal {
+  display: none;
+  position: fixed;
+  z-index: 2000 !important;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+}
+
+#customModal .modal-content {
+  background: #fff;
+  margin: 10% auto;
+  padding: 30px 20px 20px 20px;
+  border: 1px solid #888;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 10px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#customModal #closeModal {
+  color: #aaa;
+  position: absolute;
+  top: 10px;
+  right: 18px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+#customModal #closeModal:hover {
+  color: #333;
+}
+
+#customModal #modalMessage {
+  margin: 40px 0 30px 0;
+  font-size: 1.1rem;
+  text-align: center;
+  width: 100%;
+}
+
+#customModal #modalOkBtn {
+  margin: 0 auto 0 auto;
+  display: block;
+  padding: 8px 32px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  background: #007bff;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#customModal #modalOkBtn:hover {
+  background: #0056b3;
 }
