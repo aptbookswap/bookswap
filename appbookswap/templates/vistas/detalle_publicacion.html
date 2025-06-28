@@ -72,14 +72,14 @@
           <textarea id="descripcion" class="form-control" rows="4" disabled>{{ publicacion.descripcion }}</textarea>
         </div>
 
-        <div class="mb-3">
-          <label for="estado_publicacion" class="form-label">Estado</label>
-          <select id="estado_publicacion" class="form-select" disabled>
-            <option value="disponible" {% if publicacion.estado_publicacion == 'disponible' %}selected{% endif %}>Disponible</option>
-            <option value="vendido" {% if publicacion.estado_publicacion == 'vendido' %}selected{% endif %}>Vendido</option>
-            <option value="intercambiado" {% if publicacion.estado_publicacion == 'intercambiado' %}selected{% endif %}>Intercambiado</option>
-          </select>
-        </div>
+        {% if publicacion.imagenes.all %}
+            <img id="detalleImagenPublicacion" src="{{ publicacion.imagenes.first.imagen.url }}" alt="Imagen de la publicación" style="max-width:300px;">
+        {% else %}
+            <img id="detalleImagenPublicacion" src="" alt="Imagen de la publicación" style="max-width:300px; display:none;">
+        {% endif %}
+
+        <input type="file" id="editarImagenPublicacionInput" class="form-control mt-2" accept="image/*" style="display:none;">
+        <button type="button" id="editarImagenPublicacionBtn" class="btn btn-outline-primary btn-sm mt-2" style="display:none;">Cambiar imagen</button>
 
         <div class="d-flex justify-content-between mt-4">
           <button type="button" id="btnModificar" class="btn btn-primary" disabled>Modificar</button>

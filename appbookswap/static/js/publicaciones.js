@@ -47,13 +47,13 @@ function seleccionarPublicacion(id) {
         })
         .catch(err => {
             console.error(err);
-            alert("Error cargando detalles");
+            showModal("Error cargando detalles");
         });
 }
 
-// ...existing code...
 function verDetallePublicacion(id) {
     publicacionActivaId = id;
+
     fetch(`/api/publicacion/${id}/`)
         .then(res => res.json())
         .then(data => {
@@ -63,20 +63,12 @@ function verDetallePublicacion(id) {
             document.getElementById('detalleGenero').textContent = data.libro.genero;
             document.getElementById('detallePaginas').textContent = data.libro.paginas;
             document.getElementById('detalleCantidad').textContent = data.libro.cantidad;
+
             document.getElementById('detalleTipo').textContent = data.tipo_transaccion;
             document.getElementById('detalleValor').textContent = data.valor;
             document.getElementById('detalleEstado').textContent = data.estado_publicacion;
             document.getElementById('detalleDescripcion').textContent = data.descripcion;
-            // Mostrar imagen principal
-            const imgPrincipal = document.getElementById('detalleImagenPrincipal');
-            if (data.imagenes && data.imagenes.length > 0) {
-                imgPrincipal.src = data.imagenes[0].imagen;
-                imgPrincipal.style.display = '';
-            } else {
-                imgPrincipal.src = '';
-                imgPrincipal.style.display = 'none';
-            }
-            // Galería de imágenes
+
             const imgContainer = document.getElementById('detalleImagenes');
             imgContainer.innerHTML = '';
             (data.imagenes || []).forEach(img => {
@@ -104,10 +96,11 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(res => {
             if (res.ok) {
-                alert("Publicación eliminada");
-                location.reload();
+                showModal("Publicación eliminada", function() {
+                    location.reload();
+                });
             } else {
-                alert("Error al eliminar");
+                showModal("Error al eliminar");
             }
         })
         .catch(err => console.error("Error eliminando publicación:", err));
@@ -135,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(err => {
                 console.error(err);
-                alert("No se pudo cargar la información del libro.");
+                showModal("No se pudo cargar la información del libro.");
             });
     }
 });
@@ -175,10 +168,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 const data = await response.json();
                 if (response.ok && data.success) {
-                    alert("Publicación creada con éxito.");
-                    window.location.href = '/publicaciones/';
+                    showModal("Publicación creada con éxito.", function() {
+                        window.location.href = '/publicaciones/';
+                    });
                 } else {
-                    alert(data.error || "Error al crear la publicación.");
+                    showModal(data.error || "Error al crear la publicación.");
                 }
             } catch (error) {
                 console.error("Error al enviar formulario:", error);
@@ -197,10 +191,10 @@ document.addEventListener('DOMContentLoaded', function () {
             previewContainer.innerHTML = '';
             const archivos = imagenesInput.files;
             if (archivos.length > 3) {
-                alert("Solo puedes subir hasta 3 imágenes.");
-                imagenesInput.value = "";
-                return;
-            }
+                    showModal("Solo puedes subir hasta 3 imágenes.");
+                    imagenesInput.value = "";
+                    return;
+                }
             Array.from(archivos).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function (e) {
@@ -223,11 +217,11 @@ document.addEventListener('DOMContentLoaded', function () {
         aceptarBtn.addEventListener('click', async () => {
             const usuarioActivo = JSON.parse(localStorage.getItem('usuarioActivo'));
             if (!usuarioActivo || !usuarioActivo.uid) {
-                alert("Debe iniciar sesión para aceptar la publicación.");
+                showModal("Debe iniciar sesión para aceptar la publicación.");
                 return;
             }
             if (!publicacionActivaId) {
-                alert("No hay publicación seleccionada.");
+                showModal("No hay publicación seleccionada.");
                 return;
             }
             try {
@@ -241,10 +235,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert("Has aceptado la publicación correctamente.");
-                    location.reload();
+                    showModal("Has aceptado la publicación correctamente.", function() {
+                        location.reload();
+                    });
                 } else {
-                    alert(result.error || "No se pudo aceptar la publicación.");
+                    showModal(result.error || "No se pudo aceptar la publicación.");
                 }
             } catch (err) {
                 console.error(err);
@@ -266,14 +261,15 @@ async function cambiarEstadoAEnProceso(publicacionId) {
         });
         const data = await response.json();
         if (response.ok && data.success) {
-            alert("La publicación ha sido marcada como 'En proceso'");
-            location.reload();
+            showModal("La publicación ha sido marcada como 'En proceso'", function() {
+                location.reload();
+            });
         } else {
-            alert(data.error || "No se pudo actualizar el estado.");
+            showModal(data.error || "No se pudo actualizar el estado.");
         }
     } catch (err) {
         console.error(err);
-        alert("Error al actualizar el estado.");
+        showModal("Error al actualizar el estado.");
     }
 }
 

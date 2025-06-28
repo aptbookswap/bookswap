@@ -30,8 +30,9 @@ function getCSRFToken() {
 document.addEventListener('DOMContentLoaded', function () {
     const usuario = JSON.parse(localStorage.getItem('usuarioActivo'));
     if (!usuario || !usuario.uid) {
-        alert("Debes iniciar sesión para ver esta página.");
-        window.location.href = "/";
+        showModal("Debes iniciar sesión para ver esta página.", function() {
+            window.location.href = "/";
+        });
         return;
     }
 });
@@ -76,7 +77,7 @@ function seleccionarLibro(id) {
 
     if (!libroActivoId) {
         console.error("ID de libro inválido:", id);
-        alert("Error: ID de libro inválido.");
+        showModal("Error: ID de libro inválido.");
         return;
     }
 
@@ -105,7 +106,7 @@ function seleccionarLibro(id) {
         })
         .catch(error => {
             console.error("Error cargando libro:", error);
-            alert('Error al cargar el libro.');
+            showModal('Error al cargar el libro.');
         });
 }
 
@@ -142,44 +143,87 @@ document.addEventListener('DOMContentLoaded', function () {
             const editable = this.checked;
             document.querySelectorAll('#libroForm input, #libroForm select').forEach(el => {
                 el.disabled = !editable;
+                if (el.id !== 'toggleEdit') {
+                el.disabled = !editable;
+            }
             });
             document.getElementById('guardarCambiosBtn').disabled = !editable;
             document.getElementById('eliminarBtn').disabled = !editable;
         });
     }
 
+const editarImagenBtn = document.getElementById('editarImagenBtn');
+const editarImagenInput = document.getElementById('editarImagenInput');
+const detalleImagen = document.getElementById('detalleImagen');
+
+if (toggleEdit && editarImagenBtn && editarImagenInput) {
+    toggleEdit.addEventListener('change', function () {
+        const editable = this.checked;
+        editarImagenBtn.style.display = editable ? 'inline-block' : 'none';
+        // NO deshabilites el input, solo ocúltalo visualmente
+        // editarImagenInput.disabled = !editable;  // <-- QUITA ESTA LÍNEA
+    });
+
+    editarImagenBtn.addEventListener('click', function () {
+        editarImagenInput.click();
+    });
+
+    editarImagenInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                detalleImagen.src = e.target.result;
+                detalleImagen.classList.remove('d-none');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
     // Guardar cambios del libro (PUT)
     const confirmarGuardarBtn = document.getElementById('confirmarGuardarBtn');
-    confirmarGuardarBtn.addEventListener('click', () => {
-        if (!libroActivoId) return;
+confirmarGuardarBtn.addEventListener('click', () => {
+    if (!libroActivoId) return;
 
-        const data = {
-            titulo: document.getElementById('titulo').value,
-            autor: document.getElementById('autor').value,
-            estado: document.getElementById('estado').value,
-            genero: document.getElementById('generoEdit').value,
-            paginas: parseInt(document.getElementById('paginas').value),
-            cantidad: parseInt(document.getElementById('cantidad').value)
-        };
+    const formData = new FormData();
+    formData.append('titulo', document.getElementById('titulo').value);
+    formData.append('autor', document.getElementById('autor').value);
+    formData.append('estado', document.getElementById('estado').value);
+    formData.append('genero', document.getElementById('generoEdit').value);
+    formData.append('paginas', document.getElementById('paginas').value);
+    formData.append('cantidad', document.getElementById('cantidad').value);
 
-        fetch(`/api/libro/${libroActivoId}/`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify(data)
-        })
-        .then(res => {
-            if (res.ok) {
-                alert("Libro modificado con éxito");
-                location.reload();
-            } else {
-                alert("Hubo un error al modificar el libro. Revise el formulario.");
+    // Adjuntar imagen solo si se seleccionó una nueva
+    const imagenInput = document.getElementById('editarImagenInput');
+    if (imagenInput.files.length > 0) {
+        formData.append('imagen', imagenInput.files[0]);
+    }
+
+    fetch(`/api/libro/${libroActivoId}/`, {
+        method: 'PUT',
+        headers: {
+            'X-CSRFToken': getCSRFToken()
+            // No pongas 'Content-Type', el navegador lo gestiona con FormData
+        },
+        body: formData
+    })
+    .then(res => {
+        if (res.ok) {
+            const imagen = document.getElementById('detalleImagen');
+            if (imagen && imagen.src) {
+                imagen.src = imagen.src.split('?')[0] + '?t=' + new Date().getTime();
             }
-        })
-        .catch(err => console.error("Error modificando libro:", err));
-    });
+            // location.reload(); // Si recargas, esto no es necesario
+            showModal("Libro modificado con éxito", function() {
+                location.reload();
+            });
+        } else {
+            showModal("Hubo un error al modificar el libro. Revise el formulario.");
+        }
+    })
+    .catch(err => console.error("Error modificando libro:", err));
+});
 
     // Eliminar libro (DELETE)
     const confirmarEliminarBtn = document.getElementById('confirmarEliminarBtn');
@@ -200,9 +244,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 const card = document.querySelector(`[data-libro-id="${libroActivoId}"]`);
                 if (card) card.remove();
 
-                alert("Libro eliminado con éxito");
+                showModal("Libro eliminado con éxito");
             } else {
-                alert("Hubo un error al eliminar el libro.");
+                showModal("Hubo un error al eliminar el libro.");
             }
         })
         .catch(err => console.error("Error eliminando libro:", err));

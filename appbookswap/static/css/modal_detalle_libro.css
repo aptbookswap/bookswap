@@ -48,3 +48,7 @@
 .tag .remove-tag:hover {
   background-color: #2a7fbf;
 }
+.edit-mode #editarImagenBtn,
+.edit-mode #editarImagenInput {
+  display: inline-block !important;
+}

@@ -11,94 +11,59 @@
           <input class="form-check-input" type="checkbox" id="toggleEdit">
           <label class="form-check-label" for="toggleEdit">Editar libro</label>
         </div>
-
         <form id="libroForm">
-        <div class="row g-4">
-            <div class="col-md-5 text-center">
-            <img id="detalleImagen" class="img-fluid rounded shadow-sm d-none">
+          <div class="row g-4">
+            <!-- Columna izquierda: Imagen -->
+            <div class="col-md-5 d-flex flex-column align-items-center justify-content-center">
+              <img id="detalleImagen" class="img-fluid rounded shadow-sm mb-3 d-none" style="max-height: 300px;">
+              <input type="file" id="editarImagenInput" class="form-control mt-2" accept="image/*" style="display:none;">
+              <button type="button" id="editarImagenBtn" class="btn btn-outline-light btn-sm mt-2" style="display:none;">Cambiar imagen</button>
             </div>
+            <!-- Columna derecha: Formulario -->
             <div class="col-md-7">
-            <div class="mb-3">
+              <div class="mb-3">
                 <label for="titulo" class="form-label">Título</label>
                 <input type="text" id="titulo" class="form-control" disabled required minlength="2">
-            </div>
-            <div class="mb-3">
+              </div>
+              <div class="mb-3">
                 <label for="autor" class="form-label">Autor</label>
                 <input type="text" id="autor" class="form-control" disabled required minlength="2">
-            </div>
-            <div class="mb-3">
+              </div>
+              <div class="mb-3">
                 <label for="estado" class="form-label">Estado</label>
                 <input type="text" id="estado" class="form-control" disabled required>
-            </div>
-            <div class="mb-3">
+              </div>
+              <div class="mb-3">
                 <label for="genero" class="form-label">Género</label>
                 <select id="generoDropdownEdit" class="form-select" disabled required>
-                <option value="" disabled selected>Selecciona un género</option>
-                <option value="Fantasía">Fantasía</option>
-                <option value="Misterio">Misterio</option>
-                <option value="Romance">Romance</option>
-                <option value="Finanzas">Finanzas</option>
-                <option value="Terror">Terror</option>
-                <option value="Psicología">Psicología</option>
-                <option value="Otro">Otro</option>
+                  <option value="" disabled selected>Selecciona un género</option>
+                  <option value="Fantasía">Fantasía</option>
+                  <option value="Misterio">Misterio</option>
+                  <option value="Romance">Romance</option>
+                  <option value="Finanzas">Finanzas</option>
+                  <option value="Terror">Terror</option>
+                  <option value="Psicología">Psicología</option>
+                  <option value="Otro">Otro</option>
                 </select>
                 <div id="generoTagsEdit" class="tags-container mt-2"></div>
                 <input type="hidden" id="generoEdit" name="genero" disabled required>
-            </div>
-            <div class="mb-3">
+              </div>
+              <div class="mb-3">
                 <label for="paginas" class="form-label">Páginas</label>
                 <input type="number" id="paginas" class="form-control" disabled required min="1" step="1">
-            </div>
-            <div class="mb-3">
+              </div>
+              <div class="mb-3">
                 <label for="cantidad" class="form-label">Cantidad</label>
                 <input type="number" id="cantidad" class="form-control" disabled required min="1" step="1">
+              </div>
             </div>
-            </div>
-        </div>
+          </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         <button type="submit" class="btn btn-warning" id="guardarCambiosBtn" data-bs-toggle="modal" data-bs-target="#confirmarModificarModal" disabled>Modificar</button>
         <button type="button" class="btn btn-danger" id="eliminarBtn" data-bs-toggle="modal" data-bs-target="#confirmarEliminarModal" disabled>Eliminar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal CONFIRMAR modificar -->
-<div class="modal fade" id="confirmarModificarModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Confirmar cambios</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        ¿Estás seguro de que deseas guardar los cambios en este libro?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-warning" id="confirmarGuardarBtn">Guardar cambios</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal CONFIRMAR eliminar -->
-<div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Eliminar libro</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        Esta acción eliminará este libro permanentemente. ¿Deseas continuar?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" id="confirmarEliminarBtn">Confirmar eliminación</button>
       </div>
     </div>
   </div>

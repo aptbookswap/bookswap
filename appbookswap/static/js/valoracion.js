@@ -45,7 +45,7 @@ document.getElementById('formValorarOfertador')?.addEventListener('submit', asyn
     const comentario = document.getElementById('comentario_ofertador').value;
 
     if (!rating || !comentario) {
-        alert("Por favor completa la puntuación y el comentario.");
+        showModal("Por favor completa la puntuación y el comentario.");
         return;
     }
 
@@ -66,17 +66,18 @@ document.getElementById('formValorarOfertador')?.addEventListener('submit', asyn
 
         if (res.ok) {
             await marcarComoCompletado();
-            alert("¡Valoración al ofertador enviada!");
-            bootstrap.Modal.getInstance(document.getElementById('modalValorarOfertador')).hide();
-            this.reset();
-            location.reload();
+            showModal("¡Valoración al ofertador enviada!", function() {
+                bootstrap.Modal.getInstance(document.getElementById('modalValorarOfertador')).hide();
+                this.reset();
+                location.reload();
+            });
         } else {
             const errorData = await res.json();
-            alert(errorData.error || "Error al enviar valoración.");
+            showModal(errorData.error || "Error al enviar valoración.");
         }
     } catch (err) {
         console.error(err);
-        alert("Ocurrió un error al enviar la valoración.");
+        showModal("Ocurrió un error al enviar la valoración.");
     }
 });
 
@@ -89,7 +90,7 @@ document.getElementById('formValorarComprador')?.addEventListener('submit', asyn
     const comentario = document.getElementById('comentario_comprador').value;
 
     if (!rating || !comentario) {
-        alert("Por favor completa la puntuación y el comentario.");
+        showModal("Por favor completa la puntuación y el comentario.");
         return;
     }
 
@@ -110,17 +111,18 @@ document.getElementById('formValorarComprador')?.addEventListener('submit', asyn
 
         if (res.ok) {
             await marcarComoCompletado();
-            alert("¡Valoración al comprador enviada!");
-            bootstrap.Modal.getInstance(document.getElementById('modalValorarComprador')).hide();
-            this.reset();
-            location.reload();
+            showModal("¡Valoración al comprador enviada!", function() {
+                bootstrap.Modal.getInstance(document.getElementById('modalValorarComprador')).hide();
+                this.reset();
+                location.reload();
+            });
         } else {
             const errorData = await res.json();
-            alert(errorData.error || "Error al enviar valoración.");
+            showModal(errorData.error || "Error al enviar valoración.");
         }
     } catch (err) {
         console.error(err);
-        alert("Ocurrió un error al enviar la valoración.");
+        showModal("Ocurrió un error al enviar la valoración.");
     }
 });
 
@@ -144,16 +146,19 @@ async function marcarComoCompletado() {
 
         if (response.ok && data.success) {
             if (data.estado === 'completado') {
-                alert("🎉 ¡La publicación ha sido marcada como COMPLETADA por ambos usuarios!");
+                showModal("🎉 ¡La publicación ha sido marcada como COMPLETADA por ambos usuarios!", function() {
+                    location.reload();
+                });
             } else if (data.estado === 'pendiente') {
-                alert("✅ Tu confirmación ha sido registrada. Esperando al otro usuario para completar la publicación.");
+                showModal("✅ Tu confirmación ha sido registrada. Esperando al otro usuario para completar la publicación.", function() {
+                    location.reload();
+                });
             }
-            location.reload();
         } else {
-            alert(data.error || "❌ Error al marcar como completado.");
+            showModal(data.error || "❌ Error al marcar como completado.");
         }
     } catch (err) {
         console.error("Error marcando como completado:", err);
-        alert("Error al comunicarse con el servidor.");
+        showModal("Error al comunicarse con el servidor.");
     }
 }

@@ -42,6 +42,7 @@ class ImagenLibroSerializer(serializers.ModelSerializer):
 
 class LibroSerializer(serializers.ModelSerializer):
     imagenes = ImagenLibroSerializer(many=True, read_only=True)
+    imagen = serializers.ImageField(write_only=True, required=False)  # <-- Agrega esto
 
     class Meta:
         model = Libro
@@ -50,6 +51,15 @@ class LibroSerializer(serializers.ModelSerializer):
             'id_libro': {'read_only': True},
             'user': {'read_only': True}
         }
+
+    def update(self, instance, validated_data):
+        imagen = validated_data.pop('imagen', None)
+        libro = super().update(instance, validated_data)
+        if imagen:
+            # Opcional: borrar imágenes anteriores (si solo quieres una imagen por libro)
+            ImagenLibro.objects.filter(libro=libro).delete()
+            ImagenLibro.objects.create(libro=libro, imagen=imagen)
+        return libro
 
 #------------------------------------
 # Serializadores de Valoraciones
@@ -72,16 +82,14 @@ class ValoracionACompradorSerializer(serializers.ModelSerializer):
 #------------------------------------
 class ImagenPublicacionSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(use_url=True)
-    
 
     class Meta:
         model = ImagenPublicacion
         fields = ['imagen']
 
-
 class PublicacionSerializer(serializers.ModelSerializer):
     imagenes = ImagenPublicacionSerializer(many=True, read_only=True)
-    libro = LibroSerializer(read_only=True) 
+    imagen = serializers.ImageField(write_only=True, required=False)  # <-- Agrega esto
 
     class Meta:
         model = Publicacion
@@ -91,3 +99,12 @@ class PublicacionSerializer(serializers.ModelSerializer):
             'fecha_publicacion': {'read_only': True},
             'user_ofertador': {'read_only': True}
         }
+
+    def update(self, instance, validated_data):
+        imagen = validated_data.pop('imagen', None)
+        publicacion = super().update(instance, validated_data)
+        if imagen:
+            # Opcional: borrar imágenes anteriores (si solo quieres una imagen por publicación)
+            ImagenPublicacion.objects.filter(publicacion=publicacion).delete()
+            ImagenPublicacion.objects.create(publicacion=publicacion, imagen=imagen)
+        return publicacion

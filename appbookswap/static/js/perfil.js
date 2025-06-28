@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(err => {
             console.error("Error cargando perfil:", err);
-            alert("Error cargando perfil");
+            showmodal("Error cargando perfil");
         });
 
     // ===================== Imagen de perfil =====================
@@ -291,15 +291,16 @@ document.addEventListener('DOMContentLoaded', function () {
             body: formData
         })
             .then(res => {
-                if (res.ok) {
-                    alert("Perfil actualizado con éxito");
+            if (res.ok) {
+                showModal("Perfil actualizado con éxito", function() {
                     window.location.reload();
-                } else {
-                    alert("Hubo un error al actualizar.");
-                }
-            })
-            .catch(err => console.error("Error al modificar perfil:", err));
-    });
+                });
+            } else {
+                showModal("Hubo un error al actualizar.");
+            }
+        })
+        .catch(err => console.error("Error al modificar perfil:", err));
+});
 
     // ===================== Eliminar cuenta =====================
     const eliminarBtn = document.getElementById('eliminarCuentaBtn');
@@ -314,15 +315,16 @@ document.addEventListener('DOMContentLoaded', function () {
             credentials: 'include'
         })
             .then(res => {
-                if (res.ok) {
-                    alert("Cuenta eliminada con éxito.");
+            if (res.ok) {
+                showModal("Cuenta eliminada con éxito.", function() {
                     localStorage.removeItem('usuarioActivo');
                     window.location.href = "/";
-                } else {
-                    alert("No se pudo eliminar la cuenta.");
-                }
-            })
-            .catch(err => console.error("Error eliminando cuenta:", err));
+                });
+            } else {
+                showModal("No se pudo eliminar la cuenta.");
+            }
+        })
+        .catch(err => console.error("Error eliminando cuenta:", err));
     });
 });
 
@@ -359,4 +361,11 @@ document.addEventListener('DOMContentLoaded', function () {
     renderStars('rating-ofertador');
     renderStars('rating-receptor');
 
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const toggleEdit = document.getElementById('toggleEdit');
+    toggleEdit?.addEventListener('change', function () {
+        document.body.classList.toggle('edit-mode', this.checked);
+    });
 });

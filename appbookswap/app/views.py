@@ -365,9 +365,25 @@ def publicacion_detalle(request, id_publicacion):
         publicacion = Publicacion.objects.get(id_publicacion=id_publicacion)
     except Publicacion.DoesNotExist:
         return JsonResponse({'error': 'Publicación no encontrada'}, status=404)
+
     if request.method == 'GET':
-        serializer = PublicacionSerializer(publicacion)
-        return Response(serializer.data)  # <-- Esto devuelve imágenes y todos los campos
+        return JsonResponse({
+            'id': publicacion.id_publicacion,
+            'tipo_transaccion': publicacion.tipo_transaccion,
+            'valor': publicacion.valor,
+            'descripcion': publicacion.descripcion,
+            'estado_publicacion': publicacion.estado_publicacion,
+            'libro': {
+                'titulo': publicacion.libro.titulo,
+                'autor': publicacion.libro.autor,
+                'estado': publicacion.libro.estado,
+                'genero': publicacion.libro.genero,
+                'paginas': publicacion.libro.paginas,
+                'cantidad': publicacion.libro.cantidad,
+                'imagenes': [img.imagen.url for img in publicacion.imagenes.all()]
+            }
+        })
+
     elif request.method == 'PUT':
         try:
             data = json.loads(request.body)
@@ -379,9 +395,11 @@ def publicacion_detalle(request, id_publicacion):
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+
     elif request.method == 'DELETE':
         publicacion.delete()
         return JsonResponse({'success': True})
+
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 @login_required

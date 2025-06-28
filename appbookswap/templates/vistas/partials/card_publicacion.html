@@ -1,5 +1,5 @@
 <div class="col-md-4 mb-4" data-publicacion-id="{{ publicacion.id_publicacion }}">
-  <div class="card position-relative">
+  <div class="card position-relative" id="card-publicacion">
     {% if publicacion.imagenes.all %}
     <img src="{{ publicacion.imagenes.all.0.imagen.url }}" class="card-img-top" alt="Imagen publicación">
     {% endif %}
@@ -27,9 +27,11 @@
       <span class="badge bg-secondary">{{ publicacion.estado_publicacion|title }}</span>
       <div class="mt-3">
         {% if user.is_authenticated %}
-          <a href="{% url 'publicaciones_usuario' publicacion.user_ofertador.uid %}" class="btn btn-outline-primary btn-sm">
-            Ver perfil de {{ publicacion.user_ofertador.first_name|default:publicacion.user_ofertador.username }}
-          </a>
+          {% if user.uid != publicacion.user_ofertador.uid %}
+            <a href="{% url 'publicaciones_usuario' publicacion.user_ofertador.uid %}" class="btn btn-outline-primary btn-sm">
+              Ver perfil de {{ publicacion.user_ofertador.first_name|default:publicacion.user_ofertador.username }}
+            </a>
+          {% endif %}
         {% else %}
           <div class="alert alert-warning py-2 mb-0" role="alert" style="font-size:0.95em;">
             Debes iniciar sesión para ir al perfil

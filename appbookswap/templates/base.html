@@ -23,6 +23,8 @@
     <!-- Estilos generales -->
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
 
+    <link rel="stylesheet" href="{% static 'css/card_publicacion.css' %}">
+
 
 
 
@@ -141,9 +143,30 @@
     <script src="{% static 'js/utilidades.js' %}"></script>
     <script src="{% static 'js/login.js' %}"></script>
 
+    <!-- MODAL REUTILIZABLE PARA ALERTAS -->
+    <div id="customModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.4);">
+      <div class="modal-content" style="background:#fff; margin:15% auto; padding:20px; border:1px solid #888; width:80%; max-width:400px; border-radius:8px; text-align:center;">
+        <span id="closeModal" style="color:#aaa; float:right; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
+        <p id="modalMessage"></p>
+        <button id="modalOkBtn" style="margin-top:15px;">Aceptar</button>
+      </div>
+    </div>
+    <script>
+    function showModal(message, callback) {
+        document.getElementById('modalMessage').textContent = message;
+        document.getElementById('customModal').style.display = 'block';
 
-    
+        function closeModal() {
+            document.getElementById('customModal').style.display = 'none';
+            document.getElementById('modalOkBtn').removeEventListener('click', closeModal);
+            document.getElementById('closeModal').removeEventListener('click', closeModal);
+            if (callback) callback();
+        }
 
+        document.getElementById('modalOkBtn').addEventListener('click', closeModal);
+        document.getElementById('closeModal').addEventListener('click', closeModal);
+    }
+    </script>
     {% block scripts %}{% endblock %}
 
     
