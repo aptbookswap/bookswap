@@ -33,10 +33,33 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const mapLoginBtn = document.getElementById('mapLoginBtn');
+    if (mapLoginBtn) {
+        mapLoginBtn.addEventListener('click', () => {
+            loginModalInstance.show();
+        });
+    }
+
     // Manejo del envío del formulario de login
     const loginForm = document.getElementById('loginForm');
+    const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+    const aceptoTerminos = document.getElementById('aceptoTerminos');
+    if (aceptoTerminos && loginSubmitBtn) {
+        loginSubmitBtn.disabled = true;
+        aceptoTerminos.addEventListener('change', function() {
+            loginSubmitBtn.disabled = !this.checked;
+        });
+    }
     if (loginForm) {
         loginForm.addEventListener('submit', async function (e) {
+            if (aceptoTerminos && !aceptoTerminos.checked) {
+                e.preventDefault();
+                const messageBox = document.getElementById('message');
+                messageBox.textContent = 'Debes aceptar los Términos y Condiciones para iniciar sesión.';
+                messageBox.className = 'message error';
+                return;
+            }
+
             e.preventDefault();
 
             const identificador = document.getElementById('loginEmail').value.trim();

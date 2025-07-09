@@ -79,6 +79,9 @@ urlpatterns = [
     #Catalogo de publicaciones
     path('catalogo/ajax/', catalogo_publicaciones_ajax, name='catalogo_publicaciones_ajax'),
     path('catalogo/publicacion/<int:id_publicacion>/', detalle_publicacion_catalogo, name='detalle_publicacion_catalogo'),
+
+    # Términos y condiciones
+    path('terminos-condiciones/', views.terminos_condiciones, name='terminos_condiciones'),
 ]
 
 # Archivos estáticos/media

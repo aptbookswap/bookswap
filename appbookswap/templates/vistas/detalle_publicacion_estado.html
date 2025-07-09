@@ -7,7 +7,22 @@
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
 <link rel="stylesheet" href="{% static 'css/chat.css' %}">
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
-
+<style>
+  .estado-borrador { background: #B0BEC5; color: #263238; }
+  .estado-disponible { background: #4CAF50; color: #fff; }
+  .estado-en_espera { background: #FFEB3B; color: #333; }
+  .estado-en_proceso { background: #2196F3; color: #fff; }
+  .estado-cancelado, .estado-cancel_history { background: #F44336; color: #fff; }
+  .estado-completado { background: #009688; color: #fff; }
+  .badge-estado {
+    display: inline-block;
+    padding: 0.4em 1em;
+    border-radius: 1em;
+    font-weight: bold;
+    font-size: 1em;
+    margin-bottom: 0.5em;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -29,24 +44,64 @@
         {% endif %}
 
         <h4 class="text-center">{{ publicacion.libro.titulo }}</h4>
-        <p class="text-center"><span class="badge bg-secondary">{{ publicacion.estado_publicacion|title }}</span></p>
-
+        <p class="text-center">
+          <span class="badge-estado estado-{{ publicacion.estado_publicacion }}">
+            {{ publicacion.estado_publicacion|title }}
+          </span>
+        </p>
         <hr>
         <h5>Información del Libro</h5>
-        <p><strong>Autor:</strong> {{ publicacion.libro.autor }}</p>
-        <p><strong>Género:</strong> {{ publicacion.libro.genero }}</p>
-        <p><strong>Estado:</strong> {{ publicacion.libro.estado }}</p>
-        <p><strong>Páginas:</strong> {{ publicacion.libro.paginas }}</p>
-        <p><strong>Cantidad disponible:</strong> {{ publicacion.libro.cantidad }}</p>
-
+        <form>
+          <div class="mb-2">
+            <label class="form-label"><strong>Título:</strong></label>
+            <input type="text" class="form-control bg-light" value="{{ publicacion.libro.titulo }}" readonly>
+          </div>
+          <div class="mb-2">
+            <label class="form-label"><strong>Autor:</strong></label>
+            <input type="text" class="form-control bg-light" value="{{ publicacion.libro.autor }}" readonly>
+          </div>
+          <div class="mb-2">
+            <label class="form-label"><strong>Género:</strong></label>
+            <input type="text" class="form-control bg-light" value="{{ publicacion.libro.genero }}" readonly>
+          </div>
+          <div class="mb-2">
+            <label class="form-label"><strong>Estado:</strong></label>
+            <input type="text" class="form-control bg-light" value="{{ publicacion.libro.estado }}" readonly>
+          </div>
+          <div class="mb-2">
+            <label class="form-label"><strong>Páginas:</strong></label>
+            <input type="text" class="form-control bg-light" value="{{ publicacion.libro.paginas }}" readonly>
+          </div>
+          <div class="mb-2">
+            <label class="form-label"><strong>Cantidad disponible:</strong></label>
+            <input type="text" class="form-control bg-light" value="{{ publicacion.libro.cantidad }}" readonly>
+          </div>
+        </form>
         <hr>
         <h5>Datos de la Publicación</h5>
-        <p><strong>Tipo de transacción:</strong> {{ publicacion.tipo_transaccion|title }}</p>
-        {% if publicacion.tipo_transaccion == "venta" %}
-        <p><strong>Valor:</strong> ${{ publicacion.valor }}</p>
-        {% endif %}
-        <p><strong>Descripción:</strong><br>{{ publicacion.descripcion|linebreaksbr }}</p>
-        <p><strong>Estado:</strong><br>{{ publicacion.estado_publicacion|linebreaksbr }}</p>
+        <form>
+          <div class="mb-2">
+            <label class="form-label"><strong>Tipo de transacción:</strong></label>
+            <input type="text" class="form-control bg-light" value="{{ publicacion.tipo_transaccion|title }}" readonly>
+          </div>
+          {% if publicacion.tipo_transaccion == "venta" %}
+          <div class="mb-2">
+            <label class="form-label"><strong>Valor:</strong></label>
+            <input type="text" class="form-control bg-light" value="$ {{ publicacion.valor }}" readonly>
+          </div>
+          {% endif %}
+          <div class="mb-2">
+            <label class="form-label"><strong>Descripción:</strong></label>
+            <textarea class="form-control bg-light" rows="2" readonly>{{ publicacion.descripcion }}</textarea>
+          </div>
+          <div class="mb-2">
+            <label class="form-label"><strong>Estado:</strong></label>
+            <span class="badge-estado estado-{{ publicacion.estado_publicacion }}">
+              {{ publicacion.estado_publicacion|title }}
+            </span>
+          </div>
+        </form>
+        <hr>
       </div>
 
       <!-- Columna derecha -->

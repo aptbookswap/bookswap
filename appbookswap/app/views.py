@@ -649,3 +649,6 @@ def detalle_publicacion_catalogo(request, id_publicacion):
     return render(request, 'vistas/detalle_publicacion_catalogo.html', {
         'publicacion': publicacion
     })
+
+def terminos_condiciones(request):
+    return render(request, 'vistas/terminos_condiciones.html')
